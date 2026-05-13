@@ -20,6 +20,7 @@ dependencies = [
     "hyperliquid-python-sdk>=0.9.0",
     "httpx>=0.27.0",
     "tenacity>=9.0.0",
+    "web3>=6.0.0",
     "pydantic>=2.10.0",
     "pydantic-settings>=2.6.0",
     "structlog>=24.4.0",
@@ -39,6 +40,9 @@ dev = [
     "pip-audit>=2.7.0",
     "pre-commit>=4.0.0",
 ]
+discord = ["discord.py>=2.3.2"]
+telegram = ["python-telegram-bot>=20.7"]
+channels = ["discord.py>=2.3.2", "python-telegram-bot>=20.7"]
 
 [project.scripts]
 mirael = "mirael.cli:app"
@@ -80,6 +84,7 @@ ignore = [
     "S607",     # subprocess — not used
     "RUF001",   # unicode in embedded doc strings is intentional
     "TC001",    # first-party imports used in constructors are fine at module level
+    "TC002",    # third-party imports inside try blocks are intentional deferred imports
     "TC003",    # stdlib typing imports used in constructors are fine at module level
 ]
 
@@ -100,6 +105,22 @@ exclude = ["examples/"]
 [[tool.mypy.overrides]]
 module = "hyperliquid.*"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "discord.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "telegram.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "mirael.channels.discord"
+disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
+module = "mirael.channels.telegram"
+disallow_untyped_decorators = false
 
 # ─── Pytest ──────────────────────────────────────────────────────────────────
 

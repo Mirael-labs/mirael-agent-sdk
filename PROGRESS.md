@@ -142,3 +142,27 @@ bandit -r src/      → 0 issues
 | 3 — Agent core | ✅ | Agent (RAG+chain+LLM), memory, prompts, 43 tests |
 | 4 — Hyperliquid reader | ✅ | HyperliquidReader (5 methods, httpx+tenacity), Pydantic models, 22 tests |
 | 5 — Demo | ✅ | Working terminal REPL, doc ingestion, ADR-0002, final README |
+
+---
+
+## Buildathon Phase — Arbitrum Open House London (ONGOING)
+
+**Target:** June 14, 2026 · AI Agentic Category · $20K
+
+### Delivered
+- [x] `chains/evm.py` — `AaveV3Reader`: full Aave V3 Arbitrum reader (getUserAccountData, getUserReservesData, getReservesData, _ray_to_apy), 5 OnchainReader methods
+- [x] `channels/discord.py` — `DiscordChannelAdapter`: 4 slash commands (/ask, /positions, /health, /help), response chunking, deferred interactions
+- [x] `channels/telegram.py` — `TelegramChannelAdapter`: 6 commands + plain-text handler, per-chat wallet registry
+- [x] `examples/discord_demo/bot.py` — runnable Discord bot
+- [x] `examples/telegram_demo/bot.py` — runnable Telegram bot
+- [x] `examples/arbitrum_aave_demo/main.py` — Arbitrum-native REPL demo
+- [x] `docs/use-cases.md` — 3 documented use cases for submission
+- [x] `README.md` — Buildathon-ready with quickstart, architecture, use cases
+- [x] `docker-compose.yml` — discord + telegram bot services (profile-based)
+
+### Still needed (user action required)
+- [ ] Create Discord App → set MIRAEL_DISCORD_BOT_TOKEN
+- [ ] Create Telegram bot via @BotFather → set MIRAEL_TELEGRAM_BOT_TOKEN
+- [ ] (Optional) Alchemy API key → set MIRAEL_ARBITRUM_RPC_URL
+- [ ] Record video demo for submission
+- [ ] Write submission description (500 words)

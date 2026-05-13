@@ -51,6 +51,20 @@ class MiraelSettings(BaseSettings):
     hl_network: Literal["mainnet", "testnet"] = Field(default="mainnet")
     hl_wallet_address: str | None = Field(default=None)
 
+    # ── Arbitrum / EVM ────────────────────────────────────────────────────────────
+    arbitrum_rpc_url: str = Field(
+        default="https://arb1.arbitrum.io/rpc",
+        description="Arbitrum mainnet JSON-RPC URL",
+    )
+    evm_wallet_address: str | None = Field(default=None)
+
+    # ── Channels ──────────────────────────────────────────────────────────────
+    discord_bot_token: SecretStr | None = Field(default=None)
+    discord_guild_id: int | None = Field(
+        default=None, description="Restrict bot to one server (optional)"
+    )
+    telegram_bot_token: SecretStr | None = Field(default=None)
+
     # ── App ───────────────────────────────────────────────────────────────────
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = Field(default="INFO")
     environment: Literal["development", "staging", "production"] = Field(default="development")

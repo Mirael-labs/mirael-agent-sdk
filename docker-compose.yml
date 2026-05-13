@@ -14,5 +14,25 @@ services:
       timeout: 5s
       retries: 5
 
+  discord-bot:
+    build: .
+    command: python examples/discord_demo/bot.py
+    env_file: .env
+    depends_on:
+      - qdrant
+    restart: on-failure
+    profiles:
+      - discord
+
+  telegram-bot:
+    build: .
+    command: python examples/telegram_demo/bot.py
+    env_file: .env
+    depends_on:
+      - qdrant
+    restart: on-failure
+    profiles:
+      - telegram
+
 volumes:
   qdrant_storage:

@@ -1,81 +1,177 @@
 # Mirael Agent SDK
 
-Open-source Python SDK for deploying AI customer support agents with on-chain context.
+[![CI](https://github.com/Mirael-labs/mirael-agent-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/Mirael-labs/mirael-agent-sdk/actions)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Give any DeFi protocol a conversational agent that understands their docs **and** can read a user's live wallet state from the chain — powered by Claude, Qdrant, and Hyperliquid.
+Open-source Python SDK for deploying AI customer support agents with live on-chain context.
 
-## Features
+Give any DeFi protocol a 24/7 AI assistant that **understands their docs** and **reads the user's real positions from the chain** — deployable to Discord and Telegram in minutes.
 
-- **RAG pipeline** — ingest protocol docs, semantic chunking, OpenAI embeddings, Qdrant retrieval
-- **On-chain context** — read Hyperliquid positions, balances, trades, and funding rates in real time
-- **Anthropic LLM** — `claude-sonnet-4-5` with prompt caching, streaming, and retry logic
-- **Channel-ready** — pluggable interface for Discord, Telegram, or custom channels
-- **Type-safe** — mypy strict, Pydantic v2 models throughout
-- **Observable** — structured logging via structlog, metric hooks ready
+> Built for the [Arbitrum Open House London Buildathon](https://arbitrum.foundation) · AI Agentic category
 
-## Demo
+---
 
-```bash
-# 1. Start Qdrant + install deps
-docker compose up -d qdrant
-uv sync --all-extras
-
-# 2. Ingest Hyperliquid docs
-uv run python examples/hyperliquid_demo/ingest_docs.py
-
-# 3. Chat with live on-chain context
-uv run python examples/hyperliquid_demo/chat.py 0xYOUR_WALLET
-```
+## What it does
 
 ```
-You: Why am I paying funding on my BTC position?
+User in Discord: /ask why is my health factor dropping?
 
-HyperAssist: Your BTC-PERP long (0.5 BTC) is paying funding because the
-perpetual price is above the oracle. Current rate: +0.012%/hr
-(+105% annualised). Estimated daily cost: ~$42.
-
-You: How close am I to liquidation?
-HyperAssist: Your health factor is 72/100. Liquidation distance: 28%.
-No immediate risk — but the funding burn is the bigger concern right now.
+Agent: Your Aave V3 position on Arbitrum shows a health factor of 1.42.
+       WETH collateral ($8,200) vs USDC debt ($4,100).
+       If WETH drops 22% you hit liquidation.
+       Reduce USDC debt by ~$800 to reach a safe 1.7 health factor.
 ```
 
-See [`examples/hyperliquid_demo/README.md`](examples/hyperliquid_demo/README.md) for the full walkthrough.
+- **RAG over protocol docs** — semantic search (Qdrant + OpenAI embeddings) over Hyperliquid and Aave documentation
+- **Live on-chain context** — reads positions, health factors, funding rates, and borrow APYs in real time
+- **Discord + Telegram bots** — slash commands, plain-text chat, per-user wallet registry
+- **Multi-chain** — Hyperliquid perpetuals (L1) + Aave V3 on Arbitrum, same agent interface
+- **Powered by Claude** — `claude-sonnet-4-5` with prompt caching (~60% token cost reduction on repeated context)
+- **Open-source SDK** — MIT licensed, self-hostable, pluggable architecture
 
-## Requirements
+---
 
-- Python 3.12+
-- [`uv`](https://docs.astral.sh/uv/) (recommended) or pip
+## Supported chains
+
+| Chain | Reader | Use case |
+|---|---|---|
+| Hyperliquid L1 | `HyperliquidReader` | Perpetual futures positions, funding rates, PnL |
+| Arbitrum (Aave V3) | `AaveV3Reader` | Lending positions, health factor, borrow APYs |
+| Any EVM *(planned)* | `EVMReader` | Generic ERC-20 balances, protocol adapters |
+
+---
+
+## Quick start (5 minutes)
+
+### Prerequisites
+- Python 3.12+ and [`uv`](https://docs.astral.sh/uv/)
 - Docker (for local Qdrant)
+- Anthropic API key + OpenAI API key
 
-## 10-minute setup
-
-### 1. Clone and install
+### 1. Install
 
 ```bash
-git clone https://github.com/your-org/mirael-agent-sdk
+git clone https://github.com/Mirael-labs/mirael-agent-sdk
 cd mirael-agent-sdk
 uv sync --all-extras
 ```
 
-### 2. Configure environment
+### 2. Configure
 
 ```bash
 cp .env.example .env
-# Edit .env — at minimum set MIRAEL_ANTHROPIC_API_KEY and MIRAEL_OPENAI_API_KEY
+# Fill in at minimum:
+#   MIRAEL_ANTHROPIC_API_KEY
+#   MIRAEL_OPENAI_API_KEY
+#   MIRAEL_DISCORD_BOT_TOKEN  (or TELEGRAM)
 ```
 
-### 3. Start Qdrant
+### 3. Start Qdrant + ingest docs
 
 ```bash
 docker compose up -d qdrant
+uv run python examples/hyperliquid_demo/ingest_docs.py
 ```
 
-### 4. Run the Hyperliquid demo
+### 4. Run your bot
 
 ```bash
-uv run python examples/hyperliquid_demo/ingest_docs.py
-uv run python examples/hyperliquid_demo/chat.py 0xYOUR_ADDRESS
+# Discord
+uv run python examples/discord_demo/bot.py
+
+# Telegram
+uv run python examples/telegram_demo/bot.py
+
+# Terminal REPL (Hyperliquid)
+uv run python examples/hyperliquid_demo/chat.py 0xYOUR_WALLET
+
+# Terminal REPL (Aave / Arbitrum)
+uv run python examples/arbitrum_aave_demo/main.py 0xYOUR_WALLET
 ```
+
+---
+
+## Use cases
+
+See [`docs/use-cases.md`](docs/use-cases.md) for full walkthroughs:
+
+1. **Hyperliquid 24/7 support bot** — Discord bot answering perp trading questions with live position context
+2. **Aave V3 risk monitor** — Telegram bot showing health factor and liquidation risk on Arbitrum
+3. **Multi-protocol copilot** — unified agent across Hyperliquid + Aave V3
+
+---
+
+## Architecture
+
+```
+User (Discord / Telegram / Terminal)
+    │
+    ▼
+ChannelAdapter  ─────────────────────────────────────────────────┐
+    │                                                             │
+    ▼                                                             │
+Agent (claude-sonnet-4-5)                                         │
+    ├── RAG → Retriever → Qdrant → OpenAI embeddings             │
+    ├── HyperliquidReader → REST + WebSocket (Hyperliquid L1)    │
+    └── AaveV3Reader → JSON-RPC (Arbitrum mainnet)               │
+                                                                  │
+IngestPipeline (one-time setup) ─────────────────────────────────┘
+    └── docs → SemanticChunker → OpenAIEmbeddings → Qdrant
+```
+
+Full diagram: [`docs/architecture.md`](docs/architecture.md)
+
+Architecture decisions: [`docs/adr/`](docs/adr/)
+
+---
+
+## SDK structure
+
+```
+src/mirael/
+├── config.py          # Pydantic Settings — all config, MIRAEL_* env vars
+├── exceptions.py      # Typed error hierarchy
+├── logging.py         # structlog JSON/console
+├── chains/
+│   ├── base.py        # OnchainReader Protocol
+│   ├── hyperliquid.py # HyperliquidReader — REST + tenacity retry
+│   └── evm.py         # AaveV3Reader — Aave V3 on Arbitrum via web3
+├── knowledge/
+│   ├── embeddings.py  # OpenAI text-embedding-3-large
+│   ├── vector_store.py# Qdrant async client
+│   ├── ingest.py      # SemanticChunker + IngestPipeline
+│   └── retriever.py   # top-k semantic retrieval
+├── agent/
+│   ├── base.py        # Agent — concurrent RAG + chain + LLM
+│   ├── memory.py      # InMemoryConversationMemory (sliding window)
+│   └── prompts.py     # parameterised system prompt builder
+├── channels/
+│   ├── base.py        # ChannelAdapter Protocol
+│   ├── discord.py     # Discord bot (slash commands)
+│   └── telegram.py    # Telegram bot (/commands + plain text)
+└── llm/
+    ├── base.py        # LLMProvider Protocol
+    └── anthropic.py   # AnthropicLLM — claude-sonnet-4-5 + prompt cache
+```
+
+---
+
+## Environment variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `MIRAEL_ANTHROPIC_API_KEY` | ✅ | Claude API key |
+| `MIRAEL_OPENAI_API_KEY` | ✅ | Embeddings API key |
+| `MIRAEL_QDRANT_URL` | ✅ | Qdrant URL (default: `http://localhost:6333`) |
+| `MIRAEL_HL_WALLET_ADDRESS` | For HL demo | Hyperliquid wallet |
+| `MIRAEL_ARBITRUM_RPC_URL` | For Aave demo | Arbitrum RPC (default: public endpoint) |
+| `MIRAEL_DISCORD_BOT_TOKEN` | For Discord bot | From discord.com/developers |
+| `MIRAEL_TELEGRAM_BOT_TOKEN` | For Telegram bot | From @BotFather |
+
+Full reference: [`.env.example`](.env.example)
+
+---
 
 ## Development
 
@@ -83,73 +179,14 @@ uv run python examples/hyperliquid_demo/chat.py 0xYOUR_ADDRESS
 uv sync --all-extras
 uv run pre-commit install
 
-# Quality gates
-uv run ruff check .
-uv run ruff format --check .
-uv run mypy --strict src/
-uv run pytest
-uv run bandit -r src/
-uv run pip-audit
+uv run ruff check .          # lint
+uv run mypy --strict src/    # types
+uv run pytest                # 151 tests · 88% coverage
+uv run bandit -r src/        # security
 ```
 
-## Project structure
-
-```
-src/mirael/
-├── config.py          # Pydantic Settings — all config in one place
-├── logging.py         # structlog JSON/console renderer
-├── exceptions.py      # Typed error hierarchy
-├── cli.py             # typer CLI entrypoint (mirael version|ingest|chat)
-├── chains/            # On-chain data readers (Protocol-based)
-│   ├── base.py        # OnchainReader Protocol
-│   ├── hyperliquid.py # HyperliquidReader — httpx + tenacity
-│   └── models.py      # PositionSummary, BalanceSummary, …
-├── knowledge/         # RAG: ingest → embed → store → retrieve
-│   ├── models.py      # Document, Chunk, RetrievalResult
-│   ├── embeddings.py  # OpenAI text-embedding-3-large
-│   ├── vector_store.py# Qdrant async client
-│   ├── ingest.py      # SemanticChunker + IngestPipeline
-│   └── retriever.py   # Retriever (embed query → top-k chunks)
-├── agent/             # Agent orchestration
-│   ├── base.py        # Agent: RAG + chain + LLM + memory
-│   ├── memory.py      # InMemoryConversationMemory (sliding window)
-│   ├── prompts.py     # build_system_prompt, format_chain_context
-│   └── models.py      # AgentConfig, AgentResponse
-├── channels/          # Output channels (Discord, Telegram — interfaces)
-└── llm/               # LLM provider wrappers
-    ├── base.py        # LLMProvider Protocol
-    ├── anthropic.py   # AnthropicLLM — claude-sonnet-4-5
-    └── models.py      # ChatMessage, LLMResponse
-
-examples/
-└── hyperliquid_demo/
-    ├── ingest_docs.py # Step 1: embed HL docs into Qdrant
-    ├── chat.py        # Step 2: interactive REPL with streaming
-    └── README.md      # Full walkthrough with example output
-
-docs/
-├── architecture.md    # System diagram (Mermaid)
-└── adr/
-    ├── 0001-tech-stack.md        # Why Anthropic / OpenAI / Qdrant / structlog
-    └── 0002-agent-orchestration.md # Concurrent context, graceful degradation, memory
-```
-
-## Architecture decisions
-
-See [`docs/adr/`](docs/adr/) for recorded design decisions:
-- [ADR-0001](docs/adr/0001-tech-stack.md) — Tech stack selection
-- [ADR-0002](docs/adr/0002-agent-orchestration.md) — Agent orchestration design
-
-## Coverage
-
-```
-pytest --cov=src/mirael --cov-report=term-missing
-```
-
-Current unit test coverage: **88%** across 155 tests.
-Integration tests (Qdrant + Hyperliquid mainnet) live in `tests/integration/`
-and are marked `@pytest.mark.integration`.
+---
 
 ## License
 
-MIT
+MIT — [Mirael Labs](https://github.com/Mirael-labs)

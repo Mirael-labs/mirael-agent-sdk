@@ -1,3 +1,11 @@
-"""Output channel interfaces."""
+"""Output channel adapters."""
 
-__all__: list[str] = []
+from mirael.channels.base import ChannelAdapter
+from mirael.channels.discord import DiscordChannelAdapter
+from mirael.channels.telegram import TelegramChannelAdapter
+
+__all__ = [
+    "ChannelAdapter",
+    "DiscordChannelAdapter",
+    "TelegramChannelAdapter",
+]

@@ -71,3 +71,43 @@ class MarketInfo(BaseModel):
     max_leverage: int
     prev_day_price: float
     day_notional_volume: float
+
+
+# ── Aave V3 models ────────────────────────────────────────────────────────────
+
+
+class AaveUserPosition(BaseModel):
+    """A single Aave V3 supply or borrow position."""
+
+    asset_symbol: str
+    asset_address: str
+    position_type: str = Field(description="'supply' or 'borrow'")
+    balance_usd: float
+    apy: float = Field(description="Current supply or variable borrow APY (decimal)")
+    is_collateral: bool = Field(default=False)
+
+
+class AaveAccountSummary(BaseModel):
+    """Aave V3 account health overview."""
+
+    total_collateral_usd: float
+    total_debt_usd: float
+    available_borrow_usd: float
+    current_ltv: float = Field(description="Loan-to-value ratio (0–1)")
+    liquidation_threshold: float = Field(description="Liquidation threshold (0–1)")
+    health_factor: float = Field(description=">1 = safe, <1 = liquidatable")
+
+
+class AaveMarket(BaseModel):
+    """Aave V3 reserve market data."""
+
+    asset_symbol: str
+    asset_address: str
+    supply_apy: float
+    variable_borrow_apy: float
+    stable_borrow_apy: float
+    total_supplied_usd: float
+    total_borrowed_usd: float
+    utilization_rate: float
+    ltv: float
+    liquidation_threshold: float

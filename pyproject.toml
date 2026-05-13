@@ -1,0 +1,128 @@
+[project]
+name = "mirael-agent-sdk"
+version = "0.1.0"
+description = "Open-source Python SDK for deploying AI customer support agents with on-chain context"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+keywords = ["ai", "defi", "hyperliquid", "rag", "llm", "agent"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "anthropic>=0.40.0",
+    "openai>=1.50.0",
+    "qdrant-client>=1.9.0",
+    "hyperliquid-python-sdk>=0.9.0",
+    "httpx>=0.27.0",
+    "tenacity>=9.0.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+    "structlog>=24.4.0",
+    "typer>=0.15.0",
+    "rich>=13.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "respx>=0.21.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "bandit[toml]>=1.8.0",
+    "pip-audit>=2.7.0",
+    "pre-commit>=4.0.0",
+]
+
+[project.scripts]
+mirael = "mirael.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mirael"]
+
+# ─── Ruff ────────────────────────────────────────────────────────────────────
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "N",        # pep8-naming
+    "UP",       # pyupgrade
+    "ANN",      # annotations
+    "S",        # bandit/security
+    "B",        # bugbear
+    "RUF",      # ruff-specific
+    "C4",       # comprehensions
+    "SIM",      # simplify
+    "TCH",      # type-checking imports
+    "PTH",      # use pathlib
+    "PERF",     # performance
+]
+ignore = [
+    "S101",     # assert in tests is fine
+    "S603",     # subprocess — not used
+    "S607",     # subprocess — not used
+    "RUF001",   # unicode in embedded doc strings is intentional
+    "TC001",    # first-party imports used in constructors are fine at module level
+    "TC003",    # stdlib typing imports used in constructors are fine at module level
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ANN", "S"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["mirael"]
+
+# ─── Mypy ────────────────────────────────────────────────────────────────────
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+exclude = ["examples/"]
+
+[[tool.mypy.overrides]]
+module = "hyperliquid.*"
+ignore_missing_imports = true
+
+# ─── Pytest ──────────────────────────────────────────────────────────────────
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = [
+    "--cov=src/mirael",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "-v",
+]
+
+[tool.coverage.run]
+source = ["src/mirael"]
+omit = ["*/tests/*"]
+
+[tool.coverage.report]
+fail_under = 70
+show_missing = true
+
+# ─── Bandit ──────────────────────────────────────────────────────────────────
+
+[tool.bandit]
+targets = ["src"]
+skips = ["B101"]  # assert_used

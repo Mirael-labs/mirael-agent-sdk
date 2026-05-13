@@ -38,9 +38,20 @@ class MiraelSettings(BaseSettings):
     llm_max_tokens: int = Field(default=4096, ge=1, le=8192)
 
     # ── Embeddings ────────────────────────────────────────────────────────────
-    openai_api_key: SecretStr = Field(description="OpenAI API key for text-embedding-3-large")
+    openai_api_key: SecretStr | None = Field(
+        default=None,
+        description="OpenAI API key — only needed if MIRAEL_EMBEDDING_PROVIDER=openai",
+    )
     embedding_model: str = Field(default="text-embedding-3-large")
-    embedding_dimensions: int = Field(default=3072, ge=256, le=3072)
+    embedding_provider: str = Field(
+        default="local",
+        description="Embedding backend: 'local' (sentence-transformers) or 'openai'",
+    )
+    local_embedding_model: str = Field(
+        default="BAAI/bge-large-en-v1.5",
+        description="sentence-transformers model name (used when embedding_provider=local)",
+    )
+    embedding_dimensions: int = Field(default=1024, ge=64, le=3072)
 
     # ── Vector Store ──────────────────────────────────────────────────────────
     qdrant_url: str = Field(default="http://localhost:6333")
@@ -75,8 +86,6 @@ class MiraelSettings(BaseSettings):
         errors: list[str] = []
         if not self.anthropic_api_key.get_secret_value().strip():
             errors.append("MIRAEL_ANTHROPIC_API_KEY is required")
-        if not self.openai_api_key.get_secret_value().strip():
-            errors.append("MIRAEL_OPENAI_API_KEY is required")
         if errors:
             raise ConfigurationError(
                 "Missing required configuration: " + "; ".join(errors),

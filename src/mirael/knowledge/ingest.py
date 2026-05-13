@@ -11,7 +11,7 @@ from __future__ import annotations
 import re
 
 from mirael.exceptions import IngestError
-from mirael.knowledge.embeddings import OpenAIEmbeddings
+from mirael.knowledge.embeddings import EmbeddingProvider
 from mirael.knowledge.models import Chunk, Document
 from mirael.knowledge.vector_store import QdrantVectorStore
 from mirael.logging import get_logger
@@ -110,7 +110,7 @@ class IngestPipeline:
 
     Args:
         chunker: ``SemanticChunker`` instance.
-        embeddings: ``OpenAIEmbeddings`` instance.
+        embeddings: ``EmbeddingProvider`` instance.
         vector_store: ``QdrantVectorStore`` instance.
         batch_size: Max chunks per embedding API call.
     """
@@ -118,7 +118,7 @@ class IngestPipeline:
     def __init__(
         self,
         chunker: SemanticChunker,
-        embeddings: OpenAIEmbeddings,
+        embeddings: EmbeddingProvider,
         vector_store: QdrantVectorStore,
         batch_size: int = 100,
     ) -> None:

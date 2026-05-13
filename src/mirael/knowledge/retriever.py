@@ -10,7 +10,7 @@ Usage::
 
 from __future__ import annotations
 
-from mirael.knowledge.embeddings import OpenAIEmbeddings
+from mirael.knowledge.embeddings import EmbeddingProvider
 from mirael.knowledge.models import RetrievalResult, SearchResult
 from mirael.knowledge.vector_store import QdrantVectorStore
 from mirael.logging import get_logger
@@ -29,7 +29,7 @@ class Retriever:
 
     def __init__(
         self,
-        embeddings: OpenAIEmbeddings,
+        embeddings: EmbeddingProvider,
         vector_store: QdrantVectorStore,
     ) -> None:
         self._embeddings = embeddings

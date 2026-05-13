@@ -25,7 +25,6 @@ async def main() -> None:
     from mirael.chains.hyperliquid import HyperliquidReader
     from mirael.channels.telegram import create_adapter_from_settings
     from mirael.config import load_settings
-    from mirael.knowledge.embeddings import OpenAIEmbeddings
     from mirael.knowledge.retriever import Retriever
     from mirael.knowledge.vector_store import QdrantVectorStore
     from mirael.llm.anthropic import AnthropicLLM
@@ -38,11 +37,8 @@ async def main() -> None:
         api_key=settings.anthropic_api_key.get_secret_value(),
         model=settings.llm_model,
     )
-    embeddings = OpenAIEmbeddings(
-        api_key=settings.openai_api_key.get_secret_value(),
-        model=settings.embedding_model,
-        dimensions=settings.embedding_dimensions,
-    )
+    from mirael.knowledge.embeddings import create_from_settings as create_embeddings
+    embeddings = create_embeddings(settings)
     vector_store = QdrantVectorStore(
         url=settings.qdrant_url,
         api_key=settings.qdrant_api_key.get_secret_value() if settings.qdrant_api_key else None,

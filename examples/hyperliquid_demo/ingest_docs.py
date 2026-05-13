@@ -257,7 +257,6 @@ _GITHUB_SOURCES: list[tuple[str, str]] = [
 
 async def _run_ingest(collection: str) -> None:
     from mirael.config import load_settings
-    from mirael.knowledge.embeddings import OpenAIEmbeddings
     from mirael.knowledge.ingest import IngestPipeline, SemanticChunker
     from mirael.knowledge.models import Document
     from mirael.knowledge.vector_store import QdrantVectorStore
@@ -266,11 +265,8 @@ async def _run_ingest(collection: str) -> None:
     settings = load_settings()
     configure_logging(level="WARNING", environment=settings.environment)
 
-    embeddings = OpenAIEmbeddings(
-        api_key=settings.openai_api_key.get_secret_value(),
-        model=settings.embedding_model,
-        dimensions=settings.embedding_dimensions,
-    )
+    from mirael.knowledge.embeddings import create_from_settings as create_embeddings
+    embeddings = create_embeddings(settings)
     vector_store = QdrantVectorStore(
         url=settings.qdrant_url,
         api_key=(

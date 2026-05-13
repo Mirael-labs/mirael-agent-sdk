@@ -13,7 +13,6 @@ class TestMiraelSettings:
     def test_loads_with_required_keys(self) -> None:
         settings = MiraelSettings(
             anthropic_api_key="sk-ant-test",  # type: ignore[arg-type]
-            openai_api_key="sk-oai-test",  # type: ignore[arg-type]
         )
         assert settings.llm_model == "claude-sonnet-4-5"
         assert settings.environment == "development"
@@ -22,14 +21,12 @@ class TestMiraelSettings:
     def test_default_qdrant_url(self) -> None:
         settings = MiraelSettings(
             anthropic_api_key="sk-ant-test",  # type: ignore[arg-type]
-            openai_api_key="sk-oai-test",  # type: ignore[arg-type]
         )
         assert settings.qdrant_url == "http://localhost:6333"
 
     def test_secrets_not_leaked_in_repr(self) -> None:
         settings = MiraelSettings(
             anthropic_api_key="sk-ant-supersecret",  # type: ignore[arg-type]
-            openai_api_key="sk-oai-supersecret",  # type: ignore[arg-type]
         )
         # SecretStr masks value in repr
         assert "supersecret" not in repr(settings)
@@ -38,28 +35,25 @@ class TestMiraelSettings:
         with pytest.raises(ConfigurationError) as exc_info:
             MiraelSettings(
                 anthropic_api_key="",  # type: ignore[arg-type]
-                openai_api_key="sk-oai-test",  # type: ignore[arg-type]
             )
         assert "ANTHROPIC" in str(exc_info.value).upper()
 
-    def test_blank_openai_key_raises(self) -> None:
-        with pytest.raises(ConfigurationError) as exc_info:
-            MiraelSettings(
-                anthropic_api_key="sk-ant-test",  # type: ignore[arg-type]
-                openai_api_key="",  # type: ignore[arg-type]
-            )
-        assert "OPENAI" in str(exc_info.value).upper()
+    def test_openai_key_is_optional(self) -> None:
+        # OpenAI key is optional — settings loads fine without explicitly providing it
+        settings = MiraelSettings(
+            anthropic_api_key="sk-ant-test",  # type: ignore[arg-type]
+        )
+        # openai_api_key may be set from env/conftest — that is fine; the point
+        # is that MiraelSettings no longer requires it to be present.
+        assert settings.embedding_provider == "local"
 
     def test_both_blank_keys_raises(self) -> None:
+        # Only Anthropic key is required now
         with pytest.raises(ConfigurationError) as exc_info:
             MiraelSettings(
                 anthropic_api_key="",  # type: ignore[arg-type]
-                openai_api_key="",  # type: ignore[arg-type]
             )
-        # Both should be mentioned
-        msg = str(exc_info.value)
-        assert "ANTHROPIC" in msg.upper()
-        assert "OPENAI" in msg.upper()
+        assert "ANTHROPIC" in str(exc_info.value).upper()
 
     def test_load_settings_uses_env(self) -> None:
         # conftest fixture injects MIRAEL_* env vars
@@ -72,7 +66,6 @@ class TestSettingsValidation:
         with pytest.raises(ValidationError):
             MiraelSettings(
                 anthropic_api_key="sk-ant-test",  # type: ignore[arg-type]
-                openai_api_key="sk-oai-test",  # type: ignore[arg-type]
                 log_level="VERBOSE",  # type: ignore[arg-type]
             )
 
@@ -80,7 +73,6 @@ class TestSettingsValidation:
         with pytest.raises(ValidationError):
             MiraelSettings(
                 anthropic_api_key="sk-ant-test",  # type: ignore[arg-type]
-                openai_api_key="sk-oai-test",  # type: ignore[arg-type]
                 hl_network="devnet",  # type: ignore[arg-type]
             )
 
@@ -88,6 +80,5 @@ class TestSettingsValidation:
         with pytest.raises(ValidationError):
             MiraelSettings(
                 anthropic_api_key="sk-ant-test",  # type: ignore[arg-type]
-                openai_api_key="sk-oai-test",  # type: ignore[arg-type]
                 llm_max_tokens=99999,
             )

@@ -160,9 +160,34 @@ bandit -r src/      → 0 issues
 - [x] `README.md` — Buildathon-ready with quickstart, architecture, use cases
 - [x] `docker-compose.yml` — discord + telegram bot services (profile-based)
 
-### Still needed (user action required)
-- [ ] Create Discord App → set MIRAEL_DISCORD_BOT_TOKEN
-- [ ] Create Telegram bot via @BotFather → set MIRAEL_TELEGRAM_BOT_TOKEN
-- [ ] (Optional) Alchemy API key → set MIRAEL_ARBITRUM_RPC_URL
-- [ ] Record video demo for submission
-- [ ] Write submission description (500 words)
+### Additional delivered (post-buildathon-phase)
+- [x] `monitoring/health_monitor.py` — HealthMonitor proactive DM alerts (HF < 1.5 warning, < 1.2 critical)
+- [x] `/monitor` slash command in Discord — starts background health monitoring with DM alerts
+- [x] `examples/arbitrum_aave_demo/ingest_aave_docs.py` — dedicated Aave V3 Arbitrum doc ingestion
+- [x] RAG corpus expanded: 6 → 16 docs, 8 → 37 chunks (Perp 101, Liquidation deep dive, Aave risk params...)
+- [x] Local embeddings: OpenAI replaced with `BAAI/bge-large-en-v1.5` (sentence-transformers, free, no API key)
+- [x] E2E test suite: 17 tests against Qdrant Cloud + Hyperliquid mainnet
+- [x] Agent E2E tests: 19/19 PASSED with real Anthropic API (claude-sonnet-4-5)
+- [x] Volume tests: embedding throughput + concurrent retrieval (13 tests)
+- [x] Playwright E2E: 24/34 tests for hyperliquid-copilot frontend
+- [x] `SUBMISSION.md` — Buildathon submission writeup (500 words)
+- [x] `VIDEO_SCRIPT.md` — Step-by-step video demo script
+- [x] Anthropic key configured + verified working
+- [x] Discord bot `Mirael Agent#9925` live in server
+- [x] Qdrant Cloud configured with 37 chunks
+- [x] Wallet `0x65bf83b7...` configured
+
+### Final quality gates
+```
+ruff check .        → ✅ 0 violations
+mypy --strict src/  → ✅ 0 errors (31 files)
+pytest (unit)       → ✅ 193/193 passed · 73% coverage
+E2E Qdrant/HL       → ✅ 17/17 passed (real services)
+Agent E2E (Claude)  → ✅ 19/19 passed (real Anthropic API)
+Volume              → ✅ 13/13 passed
+```
+
+### Still needed (user action — before Jun 14)
+- [ ] Record video demo (script in VIDEO_SCRIPT.md)
+- [ ] Submit at Arbitrum Buildathon portal
+- [ ] (Optional) Telegram bot via @BotFather → MIRAEL_TELEGRAM_BOT_TOKEN

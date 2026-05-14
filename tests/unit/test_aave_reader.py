@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -11,12 +11,19 @@ from mirael.exceptions import ChainConnectionError
 
 
 def _make_w3(pool_result: tuple, ui_result: tuple | None = None) -> MagicMock:
-    """Build a mock web3 instance returning the given call results."""
+    """Build a mock web3 instance returning the given call results.
+
+    evm.py now uses ``await contract.functions.xxx().call()`` directly,
+    so ``.call`` must be an AsyncMock.
+    """
     w3 = MagicMock()
     w3.to_checksum_address = lambda x: x
 
     pool_contract = MagicMock()
-    pool_contract.functions.getUserAccountData.return_value.call.return_value = pool_result
+    # .call() is now awaited directly — use AsyncMock
+    pool_contract.functions.getUserAccountData.return_value.call = AsyncMock(
+        return_value=pool_result
+    )
 
     ui_contract = MagicMock()
     if ui_result is not None:
@@ -64,18 +71,7 @@ class TestGetUserBalance:
         reader = AaveV3Reader()
         w3 = _make_w3(_SAMPLE_POOL_RESULT)
 
-        async def fake_run_in_executor(_executor: object, fn: object) -> object:
-            import asyncio as _aio
-
-            return await _aio.get_event_loop().run_in_executor(None, fn)  # type: ignore[arg-type]
-
-        with (
-            patch.object(reader, "_get_w3", return_value=w3),
-            patch("mirael.chains.evm.asyncio") as mock_asyncio,
-        ):
-            mock_loop = MagicMock()
-            mock_loop.run_in_executor = fake_run_in_executor
-            mock_asyncio.get_event_loop.return_value = mock_loop
+        with patch.object(reader, "_get_w3", return_value=w3):
             balance = await reader.get_user_balance("0xabc")
 
         assert balance["total_collateral_usd"] == pytest.approx(10_000.0)
@@ -89,21 +85,13 @@ class TestGetUserBalance:
         w3 = MagicMock()
         w3.to_checksum_address = lambda x: x
         pool = MagicMock()
-        pool.functions.getUserAccountData.return_value.call.side_effect = Exception("timeout")
+        # .call() is AsyncMock that raises
+        pool.functions.getUserAccountData.return_value.call = AsyncMock(
+            side_effect=Exception("timeout")
+        )
         w3.eth.contract.return_value = pool
 
-        async def fake_run_in_executor(_executor: object, fn: object) -> object:
-            import asyncio as _aio
-
-            return await _aio.get_event_loop().run_in_executor(None, fn)  # type: ignore[arg-type]
-
-        with (
-            patch.object(reader, "_get_w3", return_value=w3),
-            patch("mirael.chains.evm.asyncio") as mock_asyncio,
-        ):
-            mock_loop = MagicMock()
-            mock_loop.run_in_executor = fake_run_in_executor
-            mock_asyncio.get_event_loop.return_value = mock_loop
+        with patch.object(reader, "_get_w3", return_value=w3):
             with pytest.raises(ChainConnectionError):
                 await reader.get_user_balance("0xabc")
 

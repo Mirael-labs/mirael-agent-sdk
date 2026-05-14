@@ -96,7 +96,7 @@ class TestAgentRealLLM:
         await agent.chat("Remember the number 42.")
         agent.reset_memory()
 
-        response = await agent.chat("What number did I ask you to remember?")
+        await agent.chat("What number did I ask you to remember?")
         # Claude should not know — context was cleared
         assert agent._memory.turn_count == 1  # only the latest turn
 
@@ -105,9 +105,7 @@ class TestAgentRealLLM:
 class TestStreamingAgent:
     async def test_stream_yields_chunks(self, agent: Agent) -> None:
         """stream_chat should yield multiple text chunks."""
-        chunks: list[str] = []
-        async for chunk in agent.stream_chat("What is Hyperliquid in one sentence?"):
-            chunks.append(chunk)
+        chunks = [c async for c in agent.stream_chat("What is Hyperliquid in one sentence?")]
 
         assert len(chunks) > 0
         full_text = "".join(chunks)
@@ -115,9 +113,7 @@ class TestStreamingAgent:
 
     async def test_stream_complete_response_matches_content(self, agent: Agent) -> None:
         """Streamed and assembled text should be coherent."""
-        chunks: list[str] = []
-        async for chunk in agent.stream_chat("Define funding rate in one sentence."):
-            chunks.append(chunk)
+        chunks = [c async for c in agent.stream_chat("Define funding rate in one sentence.")]
 
         full = "".join(chunks)
         assert len(full) > 20

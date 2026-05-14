@@ -71,8 +71,7 @@ class TelegramChannelAdapter:
             )
         except ImportError as exc:
             raise ImportError(
-                "python-telegram-bot not installed. "
-                "Run: uv add 'python-telegram-bot>=20.7'"
+                "python-telegram-bot not installed. Run: uv add 'python-telegram-bot>=20.7'"
             ) from exc
 
         app = Application.builder().token(self._token).build()
@@ -96,9 +95,7 @@ class TelegramChannelAdapter:
         async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await start_cmd(update, context)
 
-        async def setwallet_cmd(
-            update: Update, context: ContextTypes.DEFAULT_TYPE
-        ) -> None:
+        async def setwallet_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             if not update.message:
                 return
             args = context.args or []
@@ -134,9 +131,7 @@ class TelegramChannelAdapter:
             for chunk in _split_message(text):
                 await msg.edit_text(chunk, parse_mode="Markdown")
 
-        async def positions_cmd(
-            update: Update, context: ContextTypes.DEFAULT_TYPE
-        ) -> None:
+        async def positions_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             if not update.message:
                 return
             args = context.args or []
@@ -158,17 +153,13 @@ class TelegramChannelAdapter:
                 text = f"⚠️ {exc}"
             await msg.edit_text(text[:_MAX_TG_LEN], parse_mode="Markdown")
 
-        async def health_cmd(
-            update: Update, context: ContextTypes.DEFAULT_TYPE
-        ) -> None:
+        async def health_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             if not update.message:
                 return
             args = context.args or []
             wallet = args[0] if args else self._wallets.get(update.message.chat_id)
             if not wallet:
-                await update.message.reply_text(
-                    "Provide a wallet: /health 0xYOUR_WALLET"
-                )
+                await update.message.reply_text("Provide a wallet: /health 0xYOUR_WALLET")
                 return
             msg = await update.message.reply_text("⏳ Checking risk...")
             try:
@@ -181,9 +172,7 @@ class TelegramChannelAdapter:
                 text = f"⚠️ {exc}"
             await msg.edit_text(text[:_MAX_TG_LEN], parse_mode="Markdown")
 
-        async def message_handler(
-            update: Update, context: ContextTypes.DEFAULT_TYPE
-        ) -> None:
+        async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             """Handle plain text messages as /ask."""
             if not update.message or not update.message.text:
                 return

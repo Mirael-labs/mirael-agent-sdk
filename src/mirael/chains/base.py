@@ -23,9 +23,7 @@ class OnchainReader(Protocol):
         """Return account balance summary for a wallet address."""
         ...
 
-    async def get_recent_trades(
-        self, wallet: str, limit: int = 50
-    ) -> list[dict[str, Any]]:
+    async def get_recent_trades(self, wallet: str, limit: int = 50) -> list[dict[str, Any]]:
         """Return the most recent trades for a wallet address."""
         ...
 

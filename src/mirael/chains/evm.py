@@ -213,6 +213,7 @@ class AaveV3Reader:
             try:
                 from web3 import AsyncWeb3
                 from web3.providers import AsyncHTTPProvider
+
                 self._w3 = AsyncWeb3(AsyncHTTPProvider(self._rpc_url))
             except ImportError as exc:
                 raise ChainConnectionError(
@@ -278,30 +279,34 @@ class AaveV3Reader:
             decimals: int = int(r[3])
             price_usd = r[28] / _BASE_CURRENCY_UNIT  # priceInMarketReferenceCurrency
 
-            supply_apy = _ray_to_apy(r[15])       # liquidityRate
-            var_borrow_apy = _ray_to_apy(r[16])   # variableBorrowRate
+            supply_apy = _ray_to_apy(r[15])  # liquidityRate
+            var_borrow_apy = _ray_to_apy(r[16])  # variableBorrowRate
 
             unit = 10**decimals
             if a_balance > 0:
                 bal_usd = (a_balance / unit) * price_usd
-                positions.append({
-                    "asset_symbol": symbol,
-                    "asset_address": asset_addr,
-                    "position_type": "supply",
-                    "balance_usd": bal_usd,
-                    "apy": supply_apy,
-                    "is_collateral": bool(is_collateral),
-                })
+                positions.append(
+                    {
+                        "asset_symbol": symbol,
+                        "asset_address": asset_addr,
+                        "position_type": "supply",
+                        "balance_usd": bal_usd,
+                        "apy": supply_apy,
+                        "is_collateral": bool(is_collateral),
+                    }
+                )
             if var_debt > 0:
                 debt_usd = (var_debt / unit) * price_usd
-                positions.append({
-                    "asset_symbol": symbol,
-                    "asset_address": asset_addr,
-                    "position_type": "borrow",
-                    "balance_usd": debt_usd,
-                    "apy": var_borrow_apy,
-                    "is_collateral": False,
-                })
+                positions.append(
+                    {
+                        "asset_symbol": symbol,
+                        "asset_address": asset_addr,
+                        "position_type": "borrow",
+                        "balance_usd": debt_usd,
+                        "apy": var_borrow_apy,
+                        "is_collateral": False,
+                    }
+                )
 
         _log.debug("aave_positions_fetched", wallet=wallet[:10], count=len(positions))
         return positions
@@ -324,9 +329,7 @@ class AaveV3Reader:
             )
             result = await loop.run_in_executor(
                 None,
-                lambda: pool.functions.getUserAccountData(
-                    w3.to_checksum_address(wallet)
-                ).call(),
+                lambda: pool.functions.getUserAccountData(w3.to_checksum_address(wallet)).call(),
             )
         except Exception as exc:
             raise ChainConnectionError(f"Aave getUserAccountData failed: {exc}") from exc
@@ -347,9 +350,7 @@ class AaveV3Reader:
             "health_factor": health,
         }
 
-    async def get_recent_trades(
-        self, wallet: str, limit: int = 50
-    ) -> list[dict[str, Any]]:
+    async def get_recent_trades(self, wallet: str, limit: int = 50) -> list[dict[str, Any]]:
         """
         Aave V3 does not have a native trades/fills concept.
 
@@ -421,11 +422,11 @@ class AaveV3Reader:
             price_usd = r[28] / _BASE_CURRENCY_UNIT
             unit = 10**decimals
 
-            supply_apy = _ray_to_apy(r[15])       # liquidityRate
-            var_borrow_apy = _ray_to_apy(r[16])   # variableBorrowRate
-            stable_borrow_apy = _ray_to_apy(r[17]) # stableBorrowRate
+            supply_apy = _ray_to_apy(r[15])  # liquidityRate
+            var_borrow_apy = _ray_to_apy(r[16])  # variableBorrowRate
+            stable_borrow_apy = _ray_to_apy(r[17])  # stableBorrowRate
 
-            available_liq = r[23]   # availableLiquidity
+            available_liq = r[23]  # availableLiquidity
             total_var_debt_scaled = r[27]  # totalScaledVariableDebt
             total_var_debt = total_var_debt_scaled  # simplified; exact needs index
             total_stable_debt = r[24]

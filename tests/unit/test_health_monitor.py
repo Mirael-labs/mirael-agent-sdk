@@ -104,11 +104,15 @@ class TestHealthMonitorDedup:
 
         chain = AsyncMock()
         chain.get_user_balance = AsyncMock(return_value={"health_factor": 999})
-        chain.get_user_positions = AsyncMock(return_value=[{
-            "asset": "ETH",
-            "mark_price": 3000.0,
-            "liquidation_price": 2750.0,  # 8.3% away — critical
-        }])
+        chain.get_user_positions = AsyncMock(
+            return_value=[
+                {
+                    "asset": "ETH",
+                    "mark_price": 3000.0,
+                    "liquidation_price": 2750.0,  # 8.3% away — critical
+                }
+            ]
+        )
 
         monitor = HealthMonitor(chain_reader=chain, check_interval=1, on_alert=on_alert)
         await monitor._check("0xabc")

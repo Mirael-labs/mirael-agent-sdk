@@ -633,14 +633,11 @@ async def _run_ingest(collection: str) -> None:
     configure_logging(level="WARNING", environment=settings.environment)
 
     from mirael.knowledge.embeddings import create_from_settings as create_embeddings
+
     embeddings = create_embeddings(settings)
     vector_store = QdrantVectorStore(
         url=settings.qdrant_url,
-        api_key=(
-            settings.qdrant_api_key.get_secret_value()
-            if settings.qdrant_api_key
-            else None
-        ),
+        api_key=(settings.qdrant_api_key.get_secret_value() if settings.qdrant_api_key else None),
         collection=collection,
         vector_dim=settings.embedding_dimensions,
     )
@@ -666,18 +663,12 @@ async def _run_ingest(collection: str) -> None:
             try:
                 resp = await http.get(url)
                 if resp.status_code == 200:
-                    documents.append(
-                        Document(url=url, title=title, content=resp.text)
-                    )
+                    documents.append(Document(url=url, title=title, content=resp.text))
                     console.print(f"  [green]✓[/green] Fetched: {title}")
                 else:
-                    console.print(
-                        f"  [yellow]⚠[/yellow] Skipped {title} (HTTP {resp.status_code})"
-                    )
+                    console.print(f"  [yellow]⚠[/yellow] Skipped {title} (HTTP {resp.status_code})")
             except Exception as exc:
-                console.print(
-                    f"  [yellow]⚠[/yellow] Skipped {title}: {exc}"
-                )
+                console.print(f"  [yellow]⚠[/yellow] Skipped {title}: {exc}")
 
     console.print(
         f"\n[bold]Ingesting {len(documents)} documents into "

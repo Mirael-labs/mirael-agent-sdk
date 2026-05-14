@@ -91,9 +91,7 @@ class TestIngestPipeline:
         mock_store.ensure_collection = AsyncMock()
         mock_store.upsert = AsyncMock()
         # embed_texts returns one vector per text
-        mock_emb.embed_texts = AsyncMock(
-            side_effect=lambda texts: [[0.1] * 4 for _ in texts]
-        )
+        mock_emb.embed_texts = AsyncMock(side_effect=lambda texts: [[0.1] * 4 for _ in texts])
         chunker = SemanticChunker(chunk_size=10, overlap=2)
         pipeline = IngestPipeline(chunker, mock_emb, mock_store, batch_size=50)
         return pipeline, mock_emb, mock_store

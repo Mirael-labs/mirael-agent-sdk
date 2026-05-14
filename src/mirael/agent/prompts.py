@@ -65,9 +65,7 @@ def build_system_prompt(
     sections: list[str] = [persona]
 
     if chain_context.strip():
-        sections.append(
-            _CHAIN_SECTION_TEMPLATE.format(content=chain_context.strip())
-        )
+        sections.append(_CHAIN_SECTION_TEMPLATE.format(content=chain_context.strip()))
 
     if rag_context.strip():
         # RAG context already has its own header from Retriever.format_context

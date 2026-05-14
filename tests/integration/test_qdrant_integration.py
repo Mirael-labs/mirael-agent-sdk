@@ -47,9 +47,7 @@ class TestQdrantIntegration:
         # Second call should not raise
         await store.ensure_collection()
 
-    async def test_upsert_and_search_round_trip(
-        self, store: QdrantVectorStore
-    ) -> None:
+    async def test_upsert_and_search_round_trip(self, store: QdrantVectorStore) -> None:
         await store.ensure_collection()
 
         chunk = Chunk(
@@ -68,16 +66,12 @@ class TestQdrantIntegration:
         assert results[0].chunk.text == chunk.text
         assert results[0].score > 0.99  # same vector → near-perfect cosine similarity
 
-    async def test_search_returns_empty_on_empty_collection(
-        self, store: QdrantVectorStore
-    ) -> None:
+    async def test_search_returns_empty_on_empty_collection(self, store: QdrantVectorStore) -> None:
         await store.ensure_collection()
         results = await store.search([0.1, 0.2, 0.3, 0.4], top_k=5)
         assert results == []
 
-    async def test_upsert_multiple_chunks_and_top_k(
-        self, store: QdrantVectorStore
-    ) -> None:
+    async def test_upsert_multiple_chunks_and_top_k(self, store: QdrantVectorStore) -> None:
         await store.ensure_collection()
 
         chunks = [
@@ -90,10 +84,7 @@ class TestQdrantIntegration:
             )
             for i in range(5)
         ]
-        vectors = [
-            [float(i), float(i + 1), float(i + 2), float(i + 3)]
-            for i in range(5)
-        ]
+        vectors = [[float(i), float(i + 1), float(i + 2), float(i + 3)] for i in range(5)]
         await store.upsert(chunks, vectors)
         results = await store.search([0.0, 1.0, 2.0, 3.0], top_k=3)
         assert len(results) == 3

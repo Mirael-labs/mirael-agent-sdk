@@ -44,9 +44,7 @@ class TestRetriever:
         results = await r.retrieve("what is funding?")
         assert results == []
 
-    async def test_retrieve_embeds_query(
-        self, mock_deps: tuple[AsyncMock, AsyncMock]
-    ) -> None:
+    async def test_retrieve_embeds_query(self, mock_deps: tuple[AsyncMock, AsyncMock]) -> None:
         emb, store = mock_deps
         r = Retriever(emb, store)
         await r.retrieve("my query")
@@ -58,9 +56,7 @@ class TestRetriever:
         emb, store = mock_deps
         r = Retriever(emb, store)
         await r.retrieve("q", top_k=3)
-        store.search.assert_called_once_with(
-            [0.1, 0.2, 0.3, 0.4], top_k=3, filter_metadata=None
-        )
+        store.search.assert_called_once_with([0.1, 0.2, 0.3, 0.4], top_k=3, filter_metadata=None)
 
     async def test_retrieve_maps_to_retrieval_results(
         self, mock_deps: tuple[AsyncMock, AsyncMock]

@@ -61,6 +61,7 @@ async def _run(wallet: str) -> None:
         model=settings.llm_model,
     )
     from mirael.knowledge.embeddings import create_from_settings as create_embeddings
+
     embeddings = create_embeddings(settings)
     vector_store = QdrantVectorStore(
         url=settings.qdrant_url,

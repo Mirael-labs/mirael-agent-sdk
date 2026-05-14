@@ -107,9 +107,7 @@ class HyperliquidReader:
         """
         data = await self._post({"type": "clearinghouseState", "user": wallet})
         positions = _parse_positions(data)
-        _log.debug(
-            "hl_positions_fetched", wallet=wallet[:10], count=len(positions)
-        )
+        _log.debug("hl_positions_fetched", wallet=wallet[:10], count=len(positions))
         return [p.model_dump() for p in positions]
 
     async def get_user_balance(self, wallet: str) -> dict[str, Any]:
@@ -132,9 +130,7 @@ class HyperliquidReader:
         )
         return balance.model_dump()
 
-    async def get_recent_trades(
-        self, wallet: str, limit: int = 50
-    ) -> list[dict[str, Any]]:
+    async def get_recent_trades(self, wallet: str, limit: int = 50) -> list[dict[str, Any]]:
         """
         Return the most recent fills (executed trades) for a wallet.
 
@@ -148,13 +144,9 @@ class HyperliquidReader:
         """
         data = await self._post({"type": "userFills", "user": wallet})
         if not isinstance(data, list):
-            raise ChainDataError(
-                f"Expected list from userFills, got {type(data).__name__}"
-            )
+            raise ChainDataError(f"Expected list from userFills, got {type(data).__name__}")
         trades = [_parse_fill(fill) for fill in data[:limit]]
-        _log.debug(
-            "hl_trades_fetched", wallet=wallet[:10], count=len(trades)
-        )
+        _log.debug("hl_trades_fetched", wallet=wallet[:10], count=len(trades))
         return [t.model_dump() for t in trades]
 
     async def get_funding_rate(self, asset: str) -> dict[str, Any]:
@@ -214,8 +206,7 @@ class HyperliquidReader:
                         return resp.json()
                     except httpx.HTTPStatusError as exc:
                         raise ChainConnectionError(
-                            f"HTTP {exc.response.status_code}: "
-                            f"{exc.response.text[:200]}",
+                            f"HTTP {exc.response.status_code}: {exc.response.text[:200]}",
                             code="CHAIN_HTTP_ERROR",
                         ) from exc
         except Exception as exc:

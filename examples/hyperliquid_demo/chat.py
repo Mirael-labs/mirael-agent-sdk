@@ -62,14 +62,11 @@ async def _run_repl(wallet: str, collection: str) -> None:
         max_tokens=settings.llm_max_tokens,
     )
     from mirael.knowledge.embeddings import create_from_settings as create_embeddings
+
     embeddings = create_embeddings(settings)
     vector_store = QdrantVectorStore(
         url=settings.qdrant_url,
-        api_key=(
-            settings.qdrant_api_key.get_secret_value()
-            if settings.qdrant_api_key
-            else None
-        ),
+        api_key=(settings.qdrant_api_key.get_secret_value() if settings.qdrant_api_key else None),
         collection=collection,
         vector_dim=settings.embedding_dimensions,
     )

@@ -59,16 +59,11 @@ class QdrantVectorStore:
         try:
             from qdrant_client.models import Distance, VectorParams
 
-            existing = [
-                c.name
-                for c in (await self._client.get_collections()).collections
-            ]
+            existing = [c.name for c in (await self._client.get_collections()).collections]
             if self._collection not in existing:
                 await self._client.create_collection(
                     collection_name=self._collection,
-                    vectors_config=VectorParams(
-                        size=self._dim, distance=Distance.COSINE
-                    ),
+                    vectors_config=VectorParams(size=self._dim, distance=Distance.COSINE),
                 )
                 _log.info(
                     "qdrant_collection_created",
@@ -76,9 +71,7 @@ class QdrantVectorStore:
                     dim=self._dim,
                 )
             else:
-                _log.debug(
-                    "qdrant_collection_exists", collection=self._collection
-                )
+                _log.debug("qdrant_collection_exists", collection=self._collection)
         except Exception as exc:
             raise VectorStoreError(
                 f"Failed to ensure collection '{self._collection}': {exc}"
@@ -125,12 +118,8 @@ class QdrantVectorStore:
                 )
                 for chunk, vec in zip(chunks, vectors, strict=True)
             ]
-            await self._client.upsert(
-                collection_name=self._collection, points=points
-            )
-            _log.info(
-                "qdrant_upserted", collection=self._collection, count=len(chunks)
-            )
+            await self._client.upsert(collection_name=self._collection, points=points)
+            _log.info("qdrant_upserted", collection=self._collection, count=len(chunks))
         except Exception as exc:
             raise VectorStoreError(f"Upsert failed: {exc}") from exc
 
@@ -167,13 +156,15 @@ class QdrantVectorStore:
                     ]
                 )
 
-            hits = await self._client.search(
+            # qdrant-client >= 1.9: search() removed, use query_points()
+            response = await self._client.query_points(
                 collection_name=self._collection,
-                query_vector=query_vector,
+                query=query_vector,
                 limit=top_k,
                 query_filter=qdrant_filter,
                 with_payload=True,
             )
+            hits = response.points
         except Exception as exc:
             raise VectorStoreError(f"Search failed: {exc}") from exc
 
@@ -214,11 +205,7 @@ def create_from_settings(settings: Any) -> QdrantVectorStore:  # noqa: ANN401
     """Factory: build ``QdrantVectorStore`` from a ``MiraelSettings`` instance."""
     return QdrantVectorStore(
         url=settings.qdrant_url,
-        api_key=(
-            settings.qdrant_api_key.get_secret_value()
-            if settings.qdrant_api_key
-            else None
-        ),
+        api_key=(settings.qdrant_api_key.get_secret_value() if settings.qdrant_api_key else None),
         collection=settings.qdrant_collection,
         vector_dim=settings.embedding_dimensions,
     )

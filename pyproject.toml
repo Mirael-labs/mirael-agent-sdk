@@ -90,7 +90,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["ANN", "S"]
+"tests/**" = ["ANN", "S", "E501", "SIM"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["mirael"]
@@ -128,6 +128,11 @@ disallow_untyped_decorators = false
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+markers = [
+    "e2e: end-to-end tests against real services (requires .env)",
+    "volume: throughput and concurrency tests",
+    "integration: integration tests (require running infrastructure)",
+]
 addopts = [
     "--cov=src/mirael",
     "--cov-report=term-missing",

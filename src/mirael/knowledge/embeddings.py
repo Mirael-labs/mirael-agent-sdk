@@ -73,6 +73,7 @@ class LocalEmbeddings:
         if self._model is None:
             try:
                 from sentence_transformers import SentenceTransformer
+
                 _log.info("loading_local_embedding_model", model=self._model_name)
                 self._model = SentenceTransformer(self._model_name)
                 _log.info("local_embedding_model_ready", model=self._model_name)
@@ -136,6 +137,7 @@ class OpenAIEmbeddings:
     ) -> None:
         try:
             from openai import AsyncOpenAI
+
             self._client: Any = AsyncOpenAI(api_key=api_key)
         except ImportError as exc:
             raise EmbeddingError(
@@ -161,6 +163,7 @@ class OpenAIEmbeddings:
 
     async def _embed_batch(self, texts: list[str]) -> list[list[float]]:
         import openai
+
         t0 = time.monotonic()
         try:
             response = await self._client.embeddings.create(

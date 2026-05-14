@@ -24,9 +24,9 @@ from mirael.logging import get_logger
 _log = get_logger(__name__)
 
 # Alert thresholds
-HEALTH_CRITICAL = 1.2   # liquidation imminent
-HEALTH_WARNING = 1.5    # needs attention
-HEALTH_WATCH = 2.0      # worth monitoring
+HEALTH_CRITICAL = 1.2  # liquidation imminent
+HEALTH_WARNING = 1.5  # needs attention
+HEALTH_WATCH = 2.0  # worth monitoring
 
 
 class HealthAlert:
@@ -113,8 +113,7 @@ class HealthMonitor:
                 health_factor=global_health,
                 liq_distance_pct=0.0,
                 message=(
-                    f"WARNING: Health factor {global_health:.2f} — "
-                    f"consider reducing exposure."
+                    f"WARNING: Health factor {global_health:.2f} — consider reducing exposure."
                 ),
                 severity="warning",
             )
@@ -128,29 +127,33 @@ class HealthMonitor:
             if liq_px and mark_px and float(mark_px) > 0:
                 dist = abs(float(mark_px) - float(liq_px)) / float(mark_px) * 100
                 if dist < 10:
-                    await self._fire(HealthAlert(
-                        wallet=wallet,
-                        asset=asset,
-                        health_factor=0.0,
-                        liq_distance_pct=dist,
-                        message=(
-                            f"{asset}: {dist:.1f}% from liquidation! "
-                            f"Mark ${float(mark_px):,.2f} -> Liq ${float(liq_px):,.2f}"
-                        ),
-                        severity="critical",
-                    ))
+                    await self._fire(
+                        HealthAlert(
+                            wallet=wallet,
+                            asset=asset,
+                            health_factor=0.0,
+                            liq_distance_pct=dist,
+                            message=(
+                                f"{asset}: {dist:.1f}% from liquidation! "
+                                f"Mark ${float(mark_px):,.2f} -> Liq ${float(liq_px):,.2f}"
+                            ),
+                            severity="critical",
+                        )
+                    )
                 elif dist < 20:
-                    await self._fire(HealthAlert(
-                        wallet=wallet,
-                        asset=asset,
-                        health_factor=0.0,
-                        liq_distance_pct=dist,
-                        message=(
-                            f"{asset}: {dist:.1f}% from liquidation. "
-                            f"Mark ${float(mark_px):,.2f} -> Liq ${float(liq_px):,.2f}"
-                        ),
-                        severity="warning",
-                    ))
+                    await self._fire(
+                        HealthAlert(
+                            wallet=wallet,
+                            asset=asset,
+                            health_factor=0.0,
+                            liq_distance_pct=dist,
+                            message=(
+                                f"{asset}: {dist:.1f}% from liquidation. "
+                                f"Mark ${float(mark_px):,.2f} -> Liq ${float(liq_px):,.2f}"
+                            ),
+                            severity="warning",
+                        )
+                    )
 
     async def _fire(self, alert: HealthAlert) -> None:
         """Deduplicate and fire alert callback."""

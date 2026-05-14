@@ -53,6 +53,7 @@ class TestDiscordChannelAdapterProtocol:
     def test_start_raises_if_discord_not_installed(self) -> None:
         """When discord.py is not installed, start() raises ImportError."""
         import sys
+
         mock_agent = MagicMock()
         adapter = DiscordChannelAdapter(token="tok", agent=mock_agent)
         # Temporarily hide discord module
@@ -61,6 +62,7 @@ class TestDiscordChannelAdapterProtocol:
         try:
             with pytest.raises((ImportError, TypeError)):
                 import asyncio
+
                 asyncio.get_event_loop().run_until_complete(adapter.start())
         finally:
             if original is None:
@@ -95,6 +97,7 @@ class TestTelegramChannelAdapterProtocol:
 class TestCreateAdapterFromSettings:
     def test_discord_raises_without_token(self) -> None:
         from mirael.channels.discord import create_adapter_from_settings
+
         settings = MagicMock()
         settings.discord_bot_token = None
         mock_agent = MagicMock()
@@ -103,6 +106,7 @@ class TestCreateAdapterFromSettings:
 
     def test_telegram_raises_without_token(self) -> None:
         from mirael.channels.telegram import create_adapter_from_settings
+
         settings = MagicMock()
         settings.telegram_bot_token = None
         mock_agent = MagicMock()
@@ -111,6 +115,7 @@ class TestCreateAdapterFromSettings:
 
     def test_discord_created_with_token(self) -> None:
         from mirael.channels.discord import create_adapter_from_settings
+
         settings = MagicMock()
         token_mock = MagicMock()
         token_mock.get_secret_value.return_value = "real-token"
@@ -123,6 +128,7 @@ class TestCreateAdapterFromSettings:
 
     def test_telegram_created_with_token(self) -> None:
         from mirael.channels.telegram import create_adapter_from_settings
+
         settings = MagicMock()
         token_mock = MagicMock()
         token_mock.get_secret_value.return_value = "tg-token"

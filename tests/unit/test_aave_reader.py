@@ -25,6 +25,7 @@ def _make_w3(pool_result: tuple, ui_result: tuple | None = None) -> MagicMock:
 
     def contract_factory(address: str, abi: list) -> MagicMock:
         from mirael.chains.evm import _POOL_ABI
+
         return pool_contract if abi is _POOL_ABI else ui_contract
 
     w3.eth.contract.side_effect = contract_factory
@@ -49,12 +50,12 @@ class TestRayToApy:
 
 
 _SAMPLE_POOL_RESULT = (
-    int(10_000 * _BASE_CURRENCY_UNIT),   # totalCollateralBase  ($10,000)
-    int(5_000 * _BASE_CURRENCY_UNIT),    # totalDebtBase        ($5,000)
-    int(2_000 * _BASE_CURRENCY_UNIT),    # availableBorrowsBase ($2,000)
-    8000,                                # currentLiquidationThreshold (80%)
-    7500,                                # ltv (75%)
-    int(1.8 * _WAD),                     # healthFactor (1.8)
+    int(10_000 * _BASE_CURRENCY_UNIT),  # totalCollateralBase  ($10,000)
+    int(5_000 * _BASE_CURRENCY_UNIT),  # totalDebtBase        ($5,000)
+    int(2_000 * _BASE_CURRENCY_UNIT),  # availableBorrowsBase ($2,000)
+    8000,  # currentLiquidationThreshold (80%)
+    7500,  # ltv (75%)
+    int(1.8 * _WAD),  # healthFactor (1.8)
 )
 
 
@@ -65,10 +66,13 @@ class TestGetUserBalance:
 
         async def fake_run_in_executor(_executor: object, fn: object) -> object:
             import asyncio as _aio
+
             return await _aio.get_event_loop().run_in_executor(None, fn)  # type: ignore[arg-type]
 
-        with patch.object(reader, "_get_w3", return_value=w3), \
-             patch("mirael.chains.evm.asyncio") as mock_asyncio:
+        with (
+            patch.object(reader, "_get_w3", return_value=w3),
+            patch("mirael.chains.evm.asyncio") as mock_asyncio,
+        ):
             mock_loop = MagicMock()
             mock_loop.run_in_executor = fake_run_in_executor
             mock_asyncio.get_event_loop.return_value = mock_loop
@@ -90,10 +94,13 @@ class TestGetUserBalance:
 
         async def fake_run_in_executor(_executor: object, fn: object) -> object:
             import asyncio as _aio
+
             return await _aio.get_event_loop().run_in_executor(None, fn)  # type: ignore[arg-type]
 
-        with patch.object(reader, "_get_w3", return_value=w3), \
-             patch("mirael.chains.evm.asyncio") as mock_asyncio:
+        with (
+            patch.object(reader, "_get_w3", return_value=w3),
+            patch("mirael.chains.evm.asyncio") as mock_asyncio,
+        ):
             mock_loop = MagicMock()
             mock_loop.run_in_executor = fake_run_in_executor
             mock_asyncio.get_event_loop.return_value = mock_loop
@@ -111,6 +118,7 @@ class TestGetRecentTrades:
 class TestAaveV3ReaderProtocol:
     def test_implements_onchain_reader(self) -> None:
         from mirael.chains.base import OnchainReader
+
         reader = AaveV3Reader()
         assert isinstance(reader, OnchainReader)
 
@@ -118,7 +126,6 @@ class TestAaveV3ReaderProtocol:
         settings = MagicMock()
         settings.arbitrum_rpc_url = "https://arb1.arbitrum.io/rpc"
         from mirael.chains.evm import create_from_settings
+
         reader = create_from_settings(settings)
         assert reader._rpc_url == "https://arb1.arbitrum.io/rpc"
-
-

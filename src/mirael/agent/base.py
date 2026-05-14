@@ -175,9 +175,7 @@ class Agent:
         if not self._retriever:
             return []
         try:
-            return await self._retriever.retrieve(
-                query, top_k=self._config.max_rag_results
-            )
+            return await self._retriever.retrieve(query, top_k=self._config.max_rag_results)
         except MiraelError:
             raise
         except Exception as exc:
@@ -209,9 +207,7 @@ class Agent:
         self._memory.add_user(user_message)
 
         full_text = ""
-        async for chunk in self._llm.stream_chat(
-            self._memory.get_messages(), system=system
-        ):
+        async for chunk in self._llm.stream_chat(self._memory.get_messages(), system=system):
             full_text += chunk
             yield chunk
 

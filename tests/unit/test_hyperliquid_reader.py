@@ -120,9 +120,7 @@ def hl_api() -> respx.MockRouter:  # type: ignore[type-arg]
 
 class TestGetUserPositions:
     async def test_returns_non_zero_positions(self, hl_api: respx.MockRouter) -> None:  # type: ignore[type-arg]
-        hl_api.post("/info").mock(
-            return_value=httpx.Response(200, json=_CLEARINGHOUSE_STATE)
-        )
+        hl_api.post("/info").mock(return_value=httpx.Response(200, json=_CLEARINGHOUSE_STATE))
         reader = HyperliquidReader()
         positions = await reader.get_user_positions(_WALLET)
         # Only BTC (size=0.5), ETH filtered (size=0.0)
@@ -130,9 +128,7 @@ class TestGetUserPositions:
         assert positions[0]["asset"] == "BTC"
 
     async def test_position_fields_correct(self, hl_api: respx.MockRouter) -> None:  # type: ignore[type-arg]
-        hl_api.post("/info").mock(
-            return_value=httpx.Response(200, json=_CLEARINGHOUSE_STATE)
-        )
+        hl_api.post("/info").mock(return_value=httpx.Response(200, json=_CLEARINGHOUSE_STATE))
         reader = HyperliquidReader()
         positions = await reader.get_user_positions(_WALLET)
         p = positions[0]
@@ -144,9 +140,7 @@ class TestGetUserPositions:
         assert p["funding_since_open"] == pytest.approx(25.5)
 
     async def test_mark_price_computed_from_notional(self, hl_api: respx.MockRouter) -> None:  # type: ignore[type-arg]
-        hl_api.post("/info").mock(
-            return_value=httpx.Response(200, json=_CLEARINGHOUSE_STATE)
-        )
+        hl_api.post("/info").mock(return_value=httpx.Response(200, json=_CLEARINGHOUSE_STATE))
         reader = HyperliquidReader()
         positions = await reader.get_user_positions(_WALLET)
         # mark_price = positionValue / abs(size) = 32500 / 0.5 = 65000
@@ -163,16 +157,22 @@ class TestGetUserPositions:
 
     async def test_null_liquidation_price_handled(self, hl_api: respx.MockRouter) -> None:  # type: ignore[type-arg]
         state = {
-            "assetPositions": [{
-                "position": {
-                    "coin": "SOL", "szi": "10", "entryPx": "150",
-                    "positionValue": "1500", "unrealizedPnl": "0",
-                    "liquidationPx": None, "marginUsed": "150",
-                    "leverage": {"type": "cross", "value": 10},
-                    "cumFunding": {},
-                },
-                "type": "oneWay",
-            }],
+            "assetPositions": [
+                {
+                    "position": {
+                        "coin": "SOL",
+                        "szi": "10",
+                        "entryPx": "150",
+                        "positionValue": "1500",
+                        "unrealizedPnl": "0",
+                        "liquidationPx": None,
+                        "marginUsed": "150",
+                        "leverage": {"type": "cross", "value": 10},
+                        "cumFunding": {},
+                    },
+                    "type": "oneWay",
+                }
+            ],
             "marginSummary": {
                 "accountValue": "5000",
                 "totalNtlPos": "1500",
@@ -190,9 +190,7 @@ class TestGetUserPositions:
 
 class TestGetUserBalance:
     async def test_returns_balance_fields(self, hl_api: respx.MockRouter) -> None:  # type: ignore[type-arg]
-        hl_api.post("/info").mock(
-            return_value=httpx.Response(200, json=_CLEARINGHOUSE_STATE)
-        )
+        hl_api.post("/info").mock(return_value=httpx.Response(200, json=_CLEARINGHOUSE_STATE))
         reader = HyperliquidReader()
         balance = await reader.get_user_balance(_WALLET)
         assert balance["account_value"] == pytest.approx(50000.0)
@@ -228,7 +226,7 @@ class TestGetRecentTrades:
         hl_api.post("/info").mock(return_value=httpx.Response(200, json=_USER_FILLS))
         reader = HyperliquidReader()
         trades = await reader.get_recent_trades(_WALLET)
-        assert trades[0]["side"] == "buy"   # "B" → "buy"
+        assert trades[0]["side"] == "buy"  # "B" → "buy"
         assert trades[1]["side"] == "sell"  # "A" → "sell"
 
     async def test_limit_applied(self, hl_api: respx.MockRouter) -> None:  # type: ignore[type-arg]
@@ -254,9 +252,7 @@ class TestGetRecentTrades:
 
 class TestGetFundingRate:
     async def test_returns_funding_fields(self, hl_api: respx.MockRouter) -> None:  # type: ignore[type-arg]
-        hl_api.post("/info").mock(
-            return_value=httpx.Response(200, json=_META_AND_ASSET_CTXS)
-        )
+        hl_api.post("/info").mock(return_value=httpx.Response(200, json=_META_AND_ASSET_CTXS))
         reader = HyperliquidReader()
         result = await reader.get_funding_rate("BTC")
         assert result["asset"] == "BTC"
@@ -265,9 +261,7 @@ class TestGetFundingRate:
         assert result["mark_price"] == pytest.approx(65050.0)
 
     async def test_unknown_asset_raises(self, hl_api: respx.MockRouter) -> None:  # type: ignore[type-arg]
-        hl_api.post("/info").mock(
-            return_value=httpx.Response(200, json=_META_AND_ASSET_CTXS)
-        )
+        hl_api.post("/info").mock(return_value=httpx.Response(200, json=_META_AND_ASSET_CTXS))
         reader = HyperliquidReader()
         with pytest.raises(ChainDataError, match="DOGE"):
             await reader.get_funding_rate("DOGE")
@@ -278,9 +272,7 @@ class TestGetFundingRate:
 
 class TestGetMarketInfo:
     async def test_returns_market_fields(self, hl_api: respx.MockRouter) -> None:  # type: ignore[type-arg]
-        hl_api.post("/info").mock(
-            return_value=httpx.Response(200, json=_META_AND_ASSET_CTXS)
-        )
+        hl_api.post("/info").mock(return_value=httpx.Response(200, json=_META_AND_ASSET_CTXS))
         reader = HyperliquidReader()
         info = await reader.get_market_info("ETH")
         assert info["asset"] == "ETH"
@@ -292,8 +284,16 @@ class TestGetMarketInfo:
     async def test_none_mid_price_handled(self, hl_api: respx.MockRouter) -> None:  # type: ignore[type-arg]
         ctxs = [
             {"universe": [{"name": "BTC", "szDecimals": 5, "maxLeverage": 50}]},
-            [{"funding": "0.0001", "openInterest": "1000", "oraclePx": "65000",
-              "markPx": "65050", "prevDayPx": "64000", "dayNtlVlm": "999"}],
+            [
+                {
+                    "funding": "0.0001",
+                    "openInterest": "1000",
+                    "oraclePx": "65000",
+                    "markPx": "65050",
+                    "prevDayPx": "64000",
+                    "dayNtlVlm": "999",
+                }
+            ],
         ]
         hl_api.post("/info").mock(return_value=httpx.Response(200, json=ctxs))
         reader = HyperliquidReader()
@@ -306,17 +306,17 @@ class TestGetMarketInfo:
 
 class TestErrorHandling:
     async def test_http_500_raises_chain_connection_error(
-        self, hl_api: respx.MockRouter  # type: ignore[type-arg]
+        self,
+        hl_api: respx.MockRouter,  # type: ignore[type-arg]
     ) -> None:
-        hl_api.post("/info").mock(
-            return_value=httpx.Response(500, text="Internal Server Error")
-        )
+        hl_api.post("/info").mock(return_value=httpx.Response(500, text="Internal Server Error"))
         reader = HyperliquidReader(max_retries=1)
         with pytest.raises(ChainConnectionError):
             await reader.get_user_balance(_WALLET)
 
     async def test_malformed_meta_response_raises_chain_data_error(
-        self, hl_api: respx.MockRouter  # type: ignore[type-arg]
+        self,
+        hl_api: respx.MockRouter,  # type: ignore[type-arg]
     ) -> None:
         hl_api.post("/info").mock(return_value=httpx.Response(200, json={"bad": "data"}))
         reader = HyperliquidReader()
@@ -325,5 +325,6 @@ class TestErrorHandling:
 
     async def test_implements_onchain_reader_protocol(self) -> None:
         from mirael.chains.base import OnchainReader
+
         reader = HyperliquidReader()
         assert isinstance(reader, OnchainReader)

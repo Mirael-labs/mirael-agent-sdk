@@ -29,7 +29,8 @@ def mock_qdrant_client() -> MagicMock:
         instance.get_collections.return_value = MagicMock(collections=[])
         instance.create_collection = AsyncMock()
         instance.upsert = AsyncMock()
-        instance.search.return_value = []
+        # qdrant-client >= 1.9 uses query_points() not search()
+        instance.query_points = AsyncMock(return_value=MagicMock(points=[]))
         instance.delete_collection = AsyncMock()
         yield instance
 
@@ -43,9 +44,7 @@ class TestEnsureCollection:
     async def test_skips_when_exists(self, mock_qdrant_client: MagicMock) -> None:
         existing = MagicMock()
         existing.name = "my_col"
-        mock_qdrant_client.get_collections.return_value = MagicMock(
-            collections=[existing]
-        )
+        mock_qdrant_client.get_collections.return_value = MagicMock(collections=[existing])
         store = QdrantVectorStore("http://localhost:6333", None, "my_col", 4)
         await store.ensure_collection()
         mock_qdrant_client.create_collection.assert_not_called()
@@ -88,7 +87,7 @@ class TestSearch:
             "section_title": "Intro",
             "chunk_index": 0,
         }
-        mock_qdrant_client.search.return_value = [hit]
+        mock_qdrant_client.query_points = AsyncMock(return_value=MagicMock(points=[hit]))
         store = QdrantVectorStore("http://localhost:6333", None, "test", 4)
         results = await store.search([0.1, 0.2, 0.3, 0.4])
         assert len(results) == 1

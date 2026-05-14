@@ -162,9 +162,7 @@ class IngestPipeline:
         for i in range(0, len(all_chunks), self._batch_size):
             batch = all_chunks[i : i + self._batch_size]
             try:
-                vectors = await self._embeddings.embed_texts(
-                    [c.text for c in batch]
-                )
+                vectors = await self._embeddings.embed_texts([c.text for c in batch])
                 await self._store.upsert(batch, vectors)
                 total_written += len(batch)
                 _log.info(

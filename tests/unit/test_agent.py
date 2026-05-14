@@ -119,9 +119,7 @@ class TestAgentChat:
         with pytest.raises(LLMError):
             await agent.chat("q")
 
-    async def test_with_chain_reader_fetches_context(
-        self, mock_llm: AsyncMock
-    ) -> None:
+    async def test_with_chain_reader_fetches_context(self, mock_llm: AsyncMock) -> None:
         chain = AsyncMock()
         chain.get_user_balance = AsyncMock(return_value={"account_value": "50000"})
         chain.get_user_positions = AsyncMock(return_value=[])

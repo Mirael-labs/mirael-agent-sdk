@@ -27,11 +27,13 @@ def mock_openai_client() -> MagicMock:
     with patch("openai.AsyncOpenAI") as mock_cls:
         instance = AsyncMock()
         mock_cls.return_value = instance
+
         # Return as many embeddings as there are input texts
         async def _create_side_effect(**kwargs: object) -> MagicMock:
             texts = kwargs.get("input", [])
             n = len(texts) if isinstance(texts, list) else 1
             return _make_openai_response(n)
+
         instance.embeddings.create = AsyncMock(side_effect=_create_side_effect)
         yield instance
 
@@ -126,6 +128,7 @@ class TestEmbeddingProviderProtocol:
 
     def test_openai_satisfies_protocol(self) -> None:
         from unittest.mock import patch
+
         with patch("openai.AsyncOpenAI"):
             emb = OpenAIEmbeddings(api_key="sk-test")
         assert isinstance(emb, EmbeddingProvider)
@@ -134,6 +137,7 @@ class TestEmbeddingProviderProtocol:
 class TestCreateFromSettings:
     def test_returns_local_by_default(self) -> None:
         from unittest.mock import MagicMock
+
         settings = MagicMock()
         settings.embedding_provider = "local"
         settings.local_embedding_model = "BAAI/bge-large-en-v1.5"
@@ -143,6 +147,7 @@ class TestCreateFromSettings:
 
     def test_returns_openai_when_configured(self) -> None:
         from unittest.mock import MagicMock, patch
+
         settings = MagicMock()
         settings.embedding_provider = "openai"
         token_mock = MagicMock()
@@ -158,6 +163,7 @@ class TestCreateFromSettings:
         from unittest.mock import MagicMock
 
         from mirael.exceptions import EmbeddingError
+
         settings = MagicMock()
         settings.embedding_provider = "openai"
         settings.openai_api_key = None

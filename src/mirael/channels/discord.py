@@ -71,9 +71,7 @@ class DiscordChannelAdapter:
             import discord
             from discord import app_commands
         except ImportError as exc:
-            raise ImportError(
-                "discord.py not installed. Run: uv add 'discord.py>=2.3.2'"
-            ) from exc
+            raise ImportError("discord.py not installed. Run: uv add 'discord.py>=2.3.2'") from exc
 
         intents = discord.Intents.default()
         intents.message_content = False  # not needed for slash commands
@@ -196,6 +194,7 @@ class DiscordChannelAdapter:
                     _log.warning("discord_dm_failed", error=str(exc))
 
             from mirael.monitoring.health_monitor import HealthMonitor
+
             monitor = HealthMonitor(
                 chain_reader=self._agent._chain,
                 check_interval=interval,

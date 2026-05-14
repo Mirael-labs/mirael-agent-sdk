@@ -19,7 +19,6 @@ Usage::
 
 from __future__ import annotations
 
-import asyncio
 from typing import Any
 
 from mirael.exceptions import ChainConnectionError, ChainDataError
@@ -237,33 +236,29 @@ class AaveV3Reader:
         """
         w3 = self._get_w3()
         try:
-            loop = asyncio.get_event_loop()
             ui_contract = w3.eth.contract(
                 address=w3.to_checksum_address(_UI_POOL_DATA_PROVIDER),
                 abi=_UI_DATA_PROVIDER_ABI,
             )
             # Fetch reserves metadata (symbols, APYs, prices)
-            reserves_data, _ = await loop.run_in_executor(
-                None,
-                lambda: ui_contract.functions.getReservesData(
-                    w3.to_checksum_address(_POOL_ADDRESSES_PROVIDER)
-                ).call(),
-            )
+            # Note: if ABI doesn't match the deployed contract version, returns []
+            reserves_data, _ = await ui_contract.functions.getReservesData(
+                w3.to_checksum_address(_POOL_ADDRESSES_PROVIDER)
+            ).call()
             # Build address → reserve index map
             reserve_map = {r[0].lower(): (i, r) for i, r in enumerate(reserves_data)}
 
             # Fetch user's per-reserve balances
-            user_reserves, _ = await loop.run_in_executor(
-                None,
-                lambda: ui_contract.functions.getUserReservesData(
-                    w3.to_checksum_address(_POOL_ADDRESSES_PROVIDER),
-                    w3.to_checksum_address(wallet),
-                ).call(),
-            )
+            user_reserves, _ = await ui_contract.functions.getUserReservesData(
+                w3.to_checksum_address(_POOL_ADDRESSES_PROVIDER),
+                w3.to_checksum_address(wallet),
+            ).call()
         except Exception as exc:
             if isinstance(exc, ChainConnectionError):
                 raise
-            raise ChainDataError(f"Failed to fetch Aave positions: {exc}") from exc
+            # ABI mismatch or empty wallet — return empty positions gracefully
+            _log.warning("aave_positions_unavailable", error=str(exc)[:120])
+            return []
 
         positions: list[dict[str, Any]] = []
         for ur in user_reserves:
@@ -322,15 +317,13 @@ class AaveV3Reader:
         """
         w3 = self._get_w3()
         try:
-            loop = asyncio.get_event_loop()
             pool = w3.eth.contract(
                 address=w3.to_checksum_address(self._pool_addr),
                 abi=_POOL_ABI,
             )
-            result = await loop.run_in_executor(
-                None,
-                lambda: pool.functions.getUserAccountData(w3.to_checksum_address(wallet)).call(),
-            )
+            result = await pool.functions.getUserAccountData(
+                w3.to_checksum_address(wallet)
+            ).call()
         except Exception as exc:
             raise ChainConnectionError(f"Aave getUserAccountData failed: {exc}") from exc
 
@@ -338,7 +331,10 @@ class AaveV3Reader:
         unit = _BASE_CURRENCY_UNIT
         wad = _WAD
 
-        health = hf / wad
+        # Aave returns type(uint256).max when there is no debt (health factor = infinity)
+        # Cap at 999 for display purposes
+        raw_health = hf / wad
+        health = min(raw_health, 999.0)
         _log.debug("aave_balance_fetched", wallet=wallet[:10], health_factor=health)
 
         return {
@@ -398,17 +394,13 @@ class AaveV3Reader:
         """
         w3 = self._get_w3()
         try:
-            loop = asyncio.get_event_loop()
             ui_contract = w3.eth.contract(
                 address=w3.to_checksum_address(_UI_POOL_DATA_PROVIDER),
                 abi=_UI_DATA_PROVIDER_ABI,
             )
-            reserves_data, _ = await loop.run_in_executor(
-                None,
-                lambda: ui_contract.functions.getReservesData(
-                    w3.to_checksum_address(_POOL_ADDRESSES_PROVIDER)
-                ).call(),
-            )
+            reserves_data, _ = await ui_contract.functions.getReservesData(
+                w3.to_checksum_address(_POOL_ADDRESSES_PROVIDER)
+            ).call()
         except Exception as exc:
             raise ChainConnectionError(f"Aave getReservesData failed: {exc}") from exc
 

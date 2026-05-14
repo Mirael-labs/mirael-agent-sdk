@@ -19,6 +19,7 @@ Setup:
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from mirael.agent.base import Agent
@@ -164,10 +165,48 @@ class DiscordChannelAdapter:
                 "`/ask [question]` — ask anything about the protocol or your positions\n"
                 "`/positions [wallet]` — show on-chain positions\n"
                 "`/health [wallet]` — show health factor & risk assessment\n"
+                "`/monitor [wallet]` — start proactive health monitoring with DM alerts\n"
                 "`/help` — this message\n\n"
                 "*Powered by Mirael Labs · [mirael-agent-sdk](https://github.com/Mirael-labs/mirael-agent-sdk)*"
             )
             await interaction.response.send_message(text, ephemeral=True)
+
+        @tree.command(
+            name="monitor",
+            description="Start proactive health monitoring — DMs you if liquidation risk rises.",
+            guild=guild_obj,
+        )
+        @app_commands.describe(
+            wallet="Your wallet address (0x...)",
+            interval="Check interval in seconds (default: 60)",
+        )
+        async def monitor_cmd(
+            interaction: Any,  # noqa: ANN401
+            wallet: str,
+            interval: int = 60,
+        ) -> None:
+            await interaction.response.defer(ephemeral=True, thinking=True)
+            user_id = str(interaction.user.id)
+
+            async def send_dm(alert: Any) -> None:  # noqa: ANN401
+                try:
+                    user = await client.fetch_user(int(user_id))
+                    await user.send(alert.message)
+                except Exception as exc:
+                    _log.warning("discord_dm_failed", error=str(exc))
+
+            from mirael.monitoring.health_monitor import HealthMonitor
+            monitor = HealthMonitor(
+                chain_reader=self._agent._chain,
+                check_interval=interval,
+                on_alert=send_dm,
+            )
+            _monitor_task = asyncio.create_task(monitor.start(wallet))  # noqa: RUF006
+            await interaction.followup.send(
+                f"Health monitor started for `{wallet[:12]}...`\n"
+                f"Checking every {interval}s. You'll receive DMs if liquidation risk rises.",
+                ephemeral=True,
+            )
 
         # ── Lifecycle ─────────────────────────────────────────────────────────
 

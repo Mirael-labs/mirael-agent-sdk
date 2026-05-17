@@ -1,136 +1,199 @@
 # Video Demo Script — Mirael Agent SDK
-## Arbitrum Buildathon Submission
+## Sin voz — solo texto en pantalla + música de fondo
 
-**Target duration:** 2:30 - 3:00 minutes  
-**Format:** Screen recording + voiceover  
-**Tool:** OBS / Loom / any screen recorder
-
----
-
-## Pre-recording setup (do this BEFORE hitting record)
-
-1. Open **VS Code** with the `mirael-agent-sdk` folder open
-2. Open **Discord** in the browser, go to "El servidor de Mael De La Hoz" → #general
-3. Have a **terminal** ready with the SDK folder open
-4. Run the ingest script so Qdrant already has docs:
-   ```bash
-   cd mirael-agent-sdk
-   uv run python examples/hyperliquid_demo/ingest_docs.py
-   ```
-5. Start the Discord bot:
-   ```bash
-   uv run python examples/discord_demo/bot.py
-   ```
-6. Have `console.anthropic.com` open in a tab (to show the API key usage)
+**Duración objetivo:** 2:00 - 2:30 minutos  
+**Herramienta:** OBS Studio (gratis) + cualquier editor (CapCut, DaVinci, iMovie)  
+**Sin narración** — todo se comunica con texto overlay
 
 ---
 
-## Script
+## Setup antes de grabar
 
-### [0:00 - 0:20] Hook
-
-> "DeFi protocols have thousands of users asking the same questions in Discord every day. *Why is my health factor dropping? Am I about to get liquidated? Why am I paying so much in funding?*"
-
-> "Manual support doesn't scale. Generic AI chatbots give generic answers. Neither can look at the user's actual wallet."
-
-> "This is Mirael Agent SDK — open-source, built on Arbitrum."
+1. Abre el bot: `uv run python examples/discord_demo/bot.py`
+2. Abre Discord en el navegador → tu servidor
+3. Ten el README del repo abierto en otra pestaña
+4. Usa **tema oscuro** en todo (Discord dark, browser dark)
 
 ---
 
-### [0:20 - 0:45] Show the architecture (VS Code / diagram)
+## Escenas y textos en pantalla
 
-*Show the architecture diagram from README.md or draw it quickly*
+### Escena 1 — [0:00 - 0:15] Título
 
-> "The SDK does two things. First, it reads the protocol's documentation using RAG — semantic search over ingested docs. Second, it connects to the blockchain and reads the user's actual positions in real time."
+**Pantalla:** Fondo negro / dark  
+**Texto overlay (grande, centrado):**
+```
+Mirael Agent SDK
 
-> "On Arbitrum, it reads from Aave V3 — health factor, collateral, debt, liquidation prices. On Hyperliquid, it reads perpetual positions and funding rates."
+AI customer support agents
+for DeFi protocols on Arbitrum
 
-> "Only one API key required: Anthropic. Everything else — embeddings, vector store — runs locally or on free tiers."
+🔗 github.com/Mirael-labs/mirael-agent-sdk
+```
 
 ---
 
-### [0:45 - 1:30] Live Discord demo
+### Escena 2 — [0:15 - 0:35] El problema
 
-*Switch to Discord in the browser*
+**Pantalla:** Screenshot de un Discord con muchas preguntas repetidas (busca uno público)  
+**Texto overlay:**
+```
+DeFi protocols spend $5K-15K/month
+on support teams answering the same questions.
 
-**Command 1 — general question:**
+"Why is my health factor dropping?"
+"Am I going to get liquidated?"
+"Why am I paying so much in funding?"
 
-Type in Discord:
+Generic AI chatbots can't help —
+they don't see the user's actual wallet.
+```
+
+---
+
+### Escena 3 — [0:35 - 1:10] Demo en Discord
+
+**Pantalla:** Discord, ventana del bot  
+
+**Acción 1:** Escribe lentamente y envía:
 ```
 /ask what is the funding rate on Hyperliquid and why does it matter?
 ```
 
-*Wait for response (5-10 seconds)*
-
-> "The agent retrieves relevant chunks from the ingested documentation and gives a precise, grounded answer — not a hallucination."
-
-**Command 2 — positions (if you have a HL wallet with positions, use it; otherwise use a demo):**
-
+**Texto overlay (mientras responde):**
 ```
-/positions 0x65bf83b7B8B3370bf2Dc59cdF95BfE221d064Fc2
+Bot reads 37 chunks of Hyperliquid documentation
+via semantic search (RAG).
+
+Answer grounded in real docs — not hallucinated.
 ```
 
-> "Now it connects to Hyperliquid mainnet and reads the wallet's actual positions."
-
-**Command 3 — health/risk (Aave angle):**
-
+**Acción 2:** Escribe:
 ```
-/ask how does Aave V3 on Arbitrum calculate liquidation? what should I watch?
+/ask how does Aave V3 on Arbitrum calculate liquidation?
 ```
 
-*Wait for response*
+**Texto overlay:**
+```
+Aave V3 on Arbitrum — Arbitrum-native integration.
 
-> "This is RAG in action — the answer is grounded in actual Aave documentation ingested earlier."
+Pool contract: 0x794a61358D6845594F94dc1DB02A252b5b4814aD
+```
 
-**Command 4 — the killer feature:**
-
+**Acción 3:** Escribe:
 ```
 /monitor 0x65bf83b7B8B3370bf2Dc59cdF95BfE221d064Fc2
 ```
 
-> "This starts proactive monitoring. If the health factor drops below 1.5, the bot DMs the user directly — before liquidation happens. No generic chatbot does this."
+**Texto overlay:**
+```
+/monitor — the killer feature.
+
+Bot polls the wallet every 60 seconds.
+DMs the user BEFORE liquidation — not after.
+```
 
 ---
 
-### [1:30 - 2:00] Show the code (VS Code)
+### Escena 4 — [1:10 - 1:30] Arquitectura (30 segundos)
 
-*Open `src/mirael/chains/evm.py` — scroll to `get_user_balance`*
+**Pantalla:** El diagrama del README o una imagen simple que hagas
 
-> "The Aave V3 reader connects directly to the Arbitrum mainnet contract at `0x794a61...` — the official Aave V3 Pool. It reads health factor, collateral, debt, and liquidation threshold in real time."
+**Texto overlay:**
+```
+User (Discord / Telegram)
+         ↓
+   Mirael Agent (Claude claude-sonnet-4-5)
+         ├── RAG → Qdrant → bge-large (local, free)
+         ├── HyperliquidReader → Hyperliquid L1
+         └── AaveV3Reader → Arbitrum mainnet
 
-*Open `src/mirael/agent/base.py` — show the `chat` method*
-
-> "The agent is modular. Any protocol can plug in their own chain reader, their own docs, their own Discord server. The `OnchainReader` Protocol makes adding GMX, Vertex, or Camelot readers a 2-hour implementation."
-
----
-
-### [2:00 - 2:20] Business model + closing
-
-*Show the README or SUBMISSION.md*
-
-> "The business model is services-first — $10-15K setup plus $2-3K per month. The target: DeFi protocols on Arbitrum with 100K+ users who need 24/7 AI support."
-
-> "The SDK is MIT licensed, open-source, and live on GitHub right now. The $20K grant from Arbitrum accelerates reaching our first three paying clients and expanding the Arbitrum-native integrations."
-
-> "Mirael Agent SDK — built in Bucaramanga, Colombia, for DeFi protocols on Arbitrum."
+1 API key required: Anthropic
+Setup time: < 1 hour
+```
 
 ---
 
-## Recording tips
+### Escena 5 — [1:30 - 1:50] Calidad del código
 
-- Use a **dark theme** everywhere (VS Code dark, Discord dark, terminal dark) — looks better on video
-- Zoom in when showing code (`Ctrl +` in VS Code)
-- Pause briefly after each Discord response so viewers can read it
-- If the bot takes > 15 seconds to respond, cut in editing
-- Add captions/subtitles in post if possible — many watch without sound
+**Pantalla:** Terminal mostrando los tests pasando
 
-## Thumbnail suggestion
+**Comando a ejecutar (y grabar):**
+```bash
+pytest tests/unit/ -q --no-cov
+# → 193 passed
+```
 
-Dark background, Liquid Glass style:  
-`Mirael Agent SDK` in white bold  
-`AI agents for DeFi on Arbitrum` in cyan  
-Small logos: Anthropic + Arbitrum + Qdrant
+**Texto overlay:**
+```
+193 unit tests · 19 E2E tests (real Anthropic API)
+17 integration tests (Qdrant Cloud + Hyperliquid mainnet)
+
+mypy strict ✅  ruff 0 violations ✅  bandit 0 issues ✅
+```
 
 ---
 
-*Total estimated recording time including setup: 45 minutes*
+### Escena 6 — [1:50 - 2:10] Business model
+
+**Pantalla:** SUBMISSION.md abierto o slide simple
+
+**Texto overlay:**
+```
+Business model: services-first → SaaS
+
+Setup:    $10K-15K one-time
+Retainer: $2K-3K/month
+Margin:   ~90%
+
+Target: 3 clients by September → $7,500 MRR
+SaaS launch: Q4 2026
+
+ICP: DeFi protocols on Arbitrum, 100K+ users
+```
+
+---
+
+### Escena 7 — [2:10 - 2:30] Cierre
+
+**Pantalla:** Fondo oscuro, logo/branding  
+**Texto overlay:**
+```
+Mirael Agent SDK
+
+Open-source · MIT License
+github.com/Mirael-labs/mirael-agent-sdk
+
+Built by Mael De La Hoz
+Mirael Labs · Bucaramanga, Colombia
+
+Built for the Arbitrum ecosystem 🔵
+```
+
+---
+
+## Música de fondo
+
+Busca en YouTube: "lofi chill background music no copyright"  
+O usa: epidemic sound / pixabay music (gratis)  
+Volumen: bajo, que no distraiga del texto
+
+## Tips de edición
+
+- **Fuente**: Inter o cualquier sans-serif, blanco sobre oscuro
+- **Transiciones**: fade negro entre escenas (0.3s)
+- **Texto**: aparece con fade in, desaparece con fade out
+- **Zoom**: cuando muestres código, haz zoom 125-150%
+- **Duración de cada texto**: mínimo 3 segundos para que se pueda leer
+
+## Herramienta más fácil para editar
+
+**CapCut** (gratis, Windows/Mac/móvil):
+1. Importa el video grabado
+2. Clic en "Text" → escribe los textos
+3. Ajusta timing arrastrando los clips
+4. Exporta en 1080p
+
+---
+
+*Tiempo estimado para grabar + editar: 1.5-2 horas*

@@ -81,16 +81,17 @@ class TelegramChannelAdapter:
 
         async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             text = (
-                "👋 *Mirael Agent* — DeFi AI assistant\n\n"
+                "👋 Mirael Agent — DeFi AI assistant\n\n"
                 "Commands:\n"
-                "/ask \\[question\\] — ask about positions, protocol docs, risk\n"
-                "/positions \\[wallet\\] — show on-chain positions\n"
-                "/health \\[wallet\\] — health factor & risk\n"
-                "/setwallet \\[0x\\.\\.\\.\\] — save your wallet for this session\n"
-                "/help — this message"
+                "  /ask [question] — ask about positions, protocol docs, risk\n"
+                "  /positions [wallet] — show on-chain positions\n"
+                "  /health [wallet] — health factor & liquidation risk\n"
+                "  /setwallet 0xYOUR_WALLET — save wallet for this session\n"
+                "  /help — this message\n\n"
+                "Tip: use /setwallet first, then just type your questions directly."
             )
             if update.message:
-                await update.message.reply_text(text, parse_mode="MarkdownV2")
+                await update.message.reply_text(text)
 
         async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await start_cmd(update, context)
@@ -102,11 +103,18 @@ class TelegramChannelAdapter:
             if not args:
                 await update.message.reply_text("Usage: /setwallet 0xYOUR_WALLET")
                 return
-            wallet = args[0]
+            wallet = args[0].strip()
+            if not (wallet.startswith("0x") and len(wallet) == 42):
+                await update.message.reply_text(
+                    "❌ Invalid wallet address. "
+                    "Must be 42 characters starting with 0x.\n"
+                    "Example: /setwallet 0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+                )
+                return
             chat_id = update.message.chat_id
             self._wallets[chat_id] = wallet
-            preview = f"{wallet[:12]}..."
-            await update.message.reply_text(f"✅ Wallet saved: `{preview}`", parse_mode="Markdown")
+            preview = f"{wallet[:8]}...{wallet[-4:]}"
+            await update.message.reply_text(f"✅ Wallet saved: `{preview}`")
 
         async def ask_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             if not update.message:

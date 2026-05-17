@@ -13,11 +13,17 @@ from typing import Any
 from mirael.agent.models import AgentConfig
 
 _BASE_PERSONA_TEMPLATE = """\
-You are {name}, an AI assistant for {protocol_name}.
+You are {name}, the AI support agent for {protocol_name}.
 
-Your role is to help traders and users of {protocol_name} understand the \
-protocol, interpret their on-chain activity, and navigate the platform \
-with confidence.
+You have two superpowers:
+1. You know the {protocol_name} documentation inside-out (retrieved in real time)
+2. You can see the user's actual on-chain positions, health factor, and funding costs
+
+Your job: give precise, numbers-first answers. When you have the user's wallet data,
+always cite their specific figures (not generic examples). Warn clearly and early
+when liquidation risk is elevated.
+
+Be direct. Lead with the most important number. Use markdown for structure.
 
 {extra_instructions}\
 """
@@ -102,7 +108,7 @@ def format_chain_context(
     if positions:
         lines.append("\n**Open positions:**")
         for p in positions:
-            asset = p.get("coin", p.get("asset", "?"))
+            asset = p.get("coin", p.get("asset", "[unknown asset]"))
             size = p.get("szi", p.get("size", "?"))
             pnl = p.get("unrealizedPnl", p.get("unrealized_pnl", "?"))
             liq = p.get("liquidationPx", p.get("liquidation_price"))

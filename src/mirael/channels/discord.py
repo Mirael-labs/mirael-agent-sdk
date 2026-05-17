@@ -108,7 +108,9 @@ class DiscordChannelAdapter:
                 full = f"⚠️ {exc}"
             except Exception as exc:
                 _log.warning("discord_ask_error", error=str(exc))
-                full = "⚠️ An unexpected error occurred. Please try again."
+                err_type = type(exc).__name__
+                hint = "Check that Qdrant is running and API keys are set."
+                full = f"⚠️ Error ({err_type}): {str(exc)[:200]}\n\n{hint}"
 
             chunks = _chunk_text(full)
             await interaction.followup.send(chunks[0])
@@ -246,7 +248,11 @@ class DiscordChannelAdapter:
 def create_adapter_from_settings(settings: Any, agent: Agent) -> DiscordChannelAdapter:  # noqa: ANN401
     """Factory: build a ``DiscordChannelAdapter`` from ``MiraelSettings``."""
     if not settings.discord_bot_token:
-        raise ValueError("MIRAEL_DISCORD_BOT_TOKEN is not set")
+        raise ValueError(
+            "MIRAEL_DISCORD_BOT_TOKEN is not set. "
+            "Set it in your .env file. "
+            "Get the token from: discord.com/developers/applications → your app → Bot → Token"
+        )
     return DiscordChannelAdapter(
         token=settings.discord_bot_token.get_secret_value(),
         agent=agent,

@@ -109,7 +109,7 @@ async def _run_repl(wallet: str, collection: str) -> None:
     async with chain_reader:
         while True:
             try:
-                raw = Prompt.ask("[bold cyan]You[/bold cyan]")
+                raw = Prompt.ask("[bold cyan]You[/bold cyan] [dim](/reset · /quit)[/dim]")
             except (KeyboardInterrupt, EOFError):
                 break
 
@@ -134,10 +134,12 @@ async def _run_repl(wallet: str, collection: str) -> None:
                     console.print(chunk, end="", highlight=False)
                     full_response.append(chunk)
             except Exception as exc:
-                console.print(
-                    f"\n[bold red]Error:[/bold red] {exc}\n"
-                    "[dim]Check your API keys and that Qdrant is running.[/dim]"
-                )
+                err_type = type(exc).__name__
+                console.print(f"\n[red]{err_type}:[/red] {exc}")
+                if "Connection" in err_type or "connect" in str(exc).lower():
+                    console.print("[dim]  → Check that Qdrant is running[/dim]")
+                elif "Authentication" in err_type or "401" in str(exc):
+                    console.print("[dim]  → Check MIRAEL_ANTHROPIC_API_KEY in .env[/dim]")
                 continue
 
             # Re-render as markdown for better formatting

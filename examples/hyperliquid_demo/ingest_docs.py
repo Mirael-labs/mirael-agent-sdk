@@ -857,9 +857,9 @@ async def _run_ingest(collection: str) -> None:
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        task = progress.add_task("Embedding and upserting...", total=None)
+        task = progress.add_task(f"Embedding {len(documents)} documents...", total=None)
         total_chunks = await pipeline.ingest(documents)
-        progress.update(task, completed=True)
+        progress.update(task, description=f"✓ {total_chunks} chunks embedded", completed=True)
 
     console.print(
         f"\n[bold green]✓ Done.[/bold green] "
@@ -868,7 +868,7 @@ async def _run_ingest(collection: str) -> None:
     )
     console.print(
         "\nRun the chat demo next:\n"
-        "  [bold]uv run python examples/hyperliquid_demo/chat.py --wallet 0xYOUR_ADDRESS[/bold]"
+        "  [bold]uv run python examples/hyperliquid_demo/chat.py 0xYOUR_ADDRESS[/bold]"
     )
 
 

@@ -111,3 +111,34 @@ class AaveMarket(BaseModel):
     utilization_rate: float
     ltv: float
     liquidation_threshold: float
+
+
+# ── GMX V2 models ────────────────────────────────────────────────────────────
+
+
+class GMXPosition(BaseModel):
+    """An open GMX V2 perpetual position."""
+
+    asset: str
+    size_usd: float
+    entry_price: float
+    mark_price: float
+    unrealized_pnl: float
+    is_long: bool
+    leverage: float
+    collateral_usd: float
+
+
+class GMXMarket(BaseModel):
+    """GMX V2 market snapshot."""
+
+    asset: str
+    mark_price: float
+    oracle_price: float
+    open_interest: float
+    long_open_interest: float
+    short_open_interest: float
+    funding_rate: float
+    max_leverage: int = 100
+    protocol: str = "GMX V2"
+    chain: str = "Arbitrum"

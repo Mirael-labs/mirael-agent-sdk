@@ -2,6 +2,7 @@
 
 from mirael.chains.base import OnchainReader
 from mirael.chains.evm import AaveV3Reader
+from mirael.chains.gmx import GMXReader
 from mirael.chains.hyperliquid import HyperliquidReader
 from mirael.chains.models import (
     AaveAccountSummary,
@@ -21,6 +22,7 @@ __all__ = [
     "AaveV3Reader",
     "BalanceSummary",
     "FundingRateInfo",
+    "GMXReader",
     "HyperliquidReader",
     "MarketInfo",
     "OnchainReader",

@@ -178,6 +178,90 @@ el pipeline completo integrado con múltiples chains.
 
 ---
 
+## Modelos de negocio adicionales
+
+### Modelo 2 — API de contexto on-chain (B2B2C)
+
+**Qué es:** En vez de vender el bot completo, vender acceso a la API de contexto
+on-chain como servicio. Protocolos integran el endpoint en sus propias apps.
+
+```
+GET /api/v1/context?wallet=0x...&protocol=aave-arbitrum
+→ {health_factor: 1.42, collateral: 8200, positions: [...]}
+```
+
+**Precio:** $0.001-0.005 por query. Con 1M queries/mes = $1K-5K/mes pasivo.  
+**Por qué funciona:** Muchos equipos quieren el dato, no el bot completo.  
+**Cuándo lanzar:** Cuando tengamos 3+ clientes services validando la demanda.
+
+---
+
+### Modelo 3 — Revenue share con protocolos
+
+**Qué es:** En vez de cobrar mensual fijo, cobrar un % del valor que el bot
+genera — por ejemplo, un % de las liquidaciones que el bot ayudó a evitar.
+
+**Ejemplo:** Si el bot alerta a 100 usuarios antes de liquidación y cada uno
+tenía $5K en riesgo → $500K de capital protegido → Mirael cobra 0.1% = $500.
+
+**Por qué es atractivo para el protocolo:**
+- Sin costo fijo — solo pagan si el bot funciona
+- Alinea los incentivos perfectamente
+- Más fácil de vender ("te cuesta $0 si no funciona")
+
+**Riesgo:** Difícil de medir y verificar. Mejor como modelo complementario al
+retainer mensual, no como reemplazo.
+
+---
+
+### Modelo 4 — White-label para protocolos grandes
+
+**Qué es:** El protocolo grande quiere "su" AI, no "Mirael Agent". Vender una
+versión completamente branded de la misma tecnología.
+
+**Ejemplo:** Aave lanza "Aave AI" en su Discord — powered by Mirael pero sin
+mencionar Mirael. Contrato $50-100K/año.
+
+**Cuándo aplica:** Protocolos con >500K usuarios y brand equity fuerte que no
+quieren asociar su nombre con un third-party.
+
+---
+
+### Modelo 5 — Agente de trading (expansión natural)
+
+**Qué es:** Evolución del bot de soporte hacia un bot que puede *ejecutar*
+acciones, no solo responder preguntas.
+
+```
+Usuario: "cierra mi posición de BTC si el health factor baja de 1.3"
+Bot: "Configurado. Te avisaré y cerraré automáticamente."
+```
+
+**Por qué es el siguiente paso natural:**
+- Ya tenemos el contexto on-chain en tiempo real
+- Ya tenemos el historial de conversación
+- Solo falta conectar los wallet adapters para firmar transacciones
+
+**Timing:** Fase 3 (2027). Requiere integrar Account Abstraction o safe wallets.
+El mercado de bots de trading DeFi es de $100M+.
+
+---
+
+### Modelo 6 — Datos de conversación anonimizados
+
+**Qué es:** Los datos de qué preguntan los usuarios son extremadamente valiosos
+para los protocolos (entienden qué confunde a sus usuarios, qué features piden,
+qué problemas tienen).
+
+**Producto:** Dashboard de analytics para el protocolo:
+- "Las 20 preguntas más frecuentes esta semana"
+- "El 34% de los usuarios pregunta sobre liquidación antes de su primera posición"
+- "Spike de preguntas sobre funding el martes — correlacionado con el precio"
+
+**Precio:** Incluido en el plan Growth ($799/mes) como diferenciador.
+
+---
+
 ## Riesgos y mitigaciones
 
 | Riesgo | Probabilidad | Mitigación |

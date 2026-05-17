@@ -601,6 +601,183 @@ New or riskier assets may launch in isolation mode:
 5. Set up monitoring alerts (this is what Mirael Agent does for you)
 """,
     ),
+    (
+        "https://gmx-docs.io/docs/trading/v2/overview",
+        "GMX V2 Trading Overview",
+        """
+# GMX V2 — Perpetual Trading on Arbitrum
+
+## What is GMX?
+GMX is a decentralized perpetual exchange on Arbitrum (and Avalanche).
+GMX V2 introduced isolated markets, improved capital efficiency, and
+a new price impact mechanism.
+
+## Key concepts
+
+### Markets
+Each GMX V2 market has a long token, short token, and index token.
+Example: BTC/USD market uses WBTC (long), USDC (short), and BTC index price.
+Markets are isolated — losses in one don't affect others.
+
+### Leverage
+GMX V2 supports up to 100× leverage on major pairs (BTC, ETH).
+Most traders use 2-10× for safer risk management.
+
+### Funding & Borrowing fees
+GMX V2 uses **borrowing fees** (not traditional funding):
+- Paid by position holders to liquidity providers (GLV/GM pool)
+- Calculated per hour based on pool utilization
+- Formula: `hourly_rate = (reserved_usd / pool_value) × factor`
+- Higher utilization = higher borrowing cost
+
+### Price impact
+Large trades move the price against the trader:
+- Reduces spread when balancing long/short OI
+- Increases spread when imbalancing the market
+
+### Liquidation
+Position is liquidated when:
+```
+remaining_collateral < maintenance_margin
+maintenance_margin = position_size × maintenance_margin_factor
+```
+Liquidation keeper closes the position, returns remaining collateral minus fees.
+
+## GLV and GM liquidity pools
+- **GM pools**: single-market liquidity (e.g. BTC-USDC GM)
+- **GLV vaults**: diversified across multiple GM pools
+- LPs earn borrowing fees + price impact fees
+- LPs risk: losses when traders profit ("delta exposure")
+
+## Key Arbitrum contracts
+- DataStore: 0xFD70de6b91282D8017aA4E741e9Ae325CAb992d
+- ExchangeRouter: 0x7452c558d45f8afC8c83dAe62C3f8A5BE19c71f
+- Reader: 0xf60becbba223EEA9495Da3f606753867eC10d139
+""",
+    ),
+    (
+        "https://gmx-docs.io/docs/trading/v2/risk-management",
+        "GMX V2 Risk Management",
+        """
+# GMX V2 Risk Management
+
+## Health factor equivalent
+GMX V2 does not use a single health factor like Aave.
+Instead, monitor:
+- **Collateral ratio** = collateral_usd / position_size_usd
+- Liquidation triggers when collateral covers < maintenance margin
+
+## Safe leverage guidelines
+| Leverage | Risk Level | Notes |
+|----------|-----------|-------|
+| 1-3x | Low | Safe for volatile assets |
+| 3-10x | Medium | Watch borrowing fees daily |
+| 10-50x | High | Requires active monitoring |
+| 50-100x | Extreme | High liquidation risk |
+
+## Borrowing fee estimation
+Daily borrowing cost ≈ position_size × hourly_rate × 24
+
+Example: $10,000 position at 0.01%/hr = $24/day
+
+## How to reduce liquidation risk
+1. Add collateral before reaching maintenance margin
+2. Reduce position size (partial close)
+3. Monitor open interest imbalance — higher OI on your side = higher fees
+4. Use stop-loss orders to auto-close before liquidation
+
+## Key difference from Aave
+- Aave: health factor across all positions
+- GMX V2: each position is isolated, independent liquidation threshold
+""",
+    ),
+    (
+        "https://vertex-protocol.gitbook.io/docs/getting-started/overview",
+        "Vertex Protocol Overview",
+        """
+# Vertex Protocol — Arbitrum DEX
+
+## What is Vertex?
+Vertex is a DEX on Arbitrum combining spot trading, perpetual futures,
+and money market in one unified interface. It uses a hybrid architecture:
+off-chain order matching + on-chain settlement.
+
+## Products
+- **Spot**: trade tokens at spot prices with limit/market orders
+- **Perps**: perpetual futures with up to 20x leverage
+- **Money market**: earn yield by supplying assets, borrow against collateral
+
+## Unified margin account
+All positions share a single cross-margin account:
+- Spot holdings count as collateral for perp positions
+- More capital efficient than isolated systems
+- One health factor across all products
+
+## Sequencer + on-chain settlement
+- Orders matched off-chain by the Vertex sequencer (fast, low latency)
+- Settlement and custody always on-chain (Arbitrum)
+- Cannot be frontrun or censored at settlement level
+
+## Key risk metrics
+- **Health score**: weighted sum of all positions and collateral
+- **Initial margin**: required to open a position
+- **Maintenance margin**: below this triggers liquidation
+- **Max leverage**: up to 20x on major pairs
+
+## Arbitrum native
+Vertex was built natively on Arbitrum:
+- Benefits from Arbitrum's low fees and fast finality
+- Integrates with Arbitrum native tokens (ARB, USDC, WETH, WBTC)
+- Part of the Arbitrum DeFi ecosystem alongside Aave, GMX, Camelot
+""",
+    ),
+    (
+        "https://docs.arbitrum.io/for-users/getting-started",
+        "Arbitrum DeFi Ecosystem",
+        """
+# Arbitrum DeFi Ecosystem Overview
+
+## What is Arbitrum?
+Arbitrum is an Ethereum Layer 2 using Optimistic Rollup technology.
+It offers 10-100x lower gas costs than Ethereum mainnet with
+~0.25 second block times and Ethereum-grade security.
+
+## Key DeFi protocols on Arbitrum
+
+### Lending
+- **Aave V3**: largest lending protocol, supports WETH/USDC/WBTC/ARB/wstETH
+- **Radiant**: cross-chain lending with Arbitrum focus
+
+### Perpetual DEX
+- **GMX V2**: largest perp DEX on Arbitrum, isolated markets, up to 100x
+- **Vertex**: unified spot+perps+money market, up to 20x
+- **Gains Network**: synthetic perps, up to 150x leverage (high risk)
+- **Hyperliquid**: separate L1 (not Arbitrum) but closely related ecosystem
+
+### DEX / Liquidity
+- **Camelot**: native Arbitrum DEX with V3-style concentrated liquidity
+- **Uniswap V3**: largest DEX, deep WETH/USDC liquidity
+
+### Yield
+- **Pendle**: yield tokenization — split any yield-bearing asset into PT+YT
+- **Convex on Arbitrum**: boosted Curve yields
+
+## ARB token
+- Native governance token of Arbitrum
+- Used for voting in Arbitrum DAO
+- Airdropped to early users in March 2023
+- Available as collateral on Aave V3 Arbitrum (56% LTV)
+
+## Gas costs on Arbitrum
+- Typical transaction: $0.01-0.10
+- Complex DeFi interaction: $0.10-1.00
+- vs Ethereum mainnet: 10-100x cheaper
+
+## Bridging assets to Arbitrum
+- **Official bridge**: bridge.arbitrum.io (slow, ~7 days withdrawal)
+- **Fast bridges**: Stargate, Hop, Across (minutes, small fee)
+""",
+    ),
 ]
 
 _GITHUB_SOURCES: list[tuple[str, str]] = [

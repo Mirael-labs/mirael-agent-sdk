@@ -64,6 +64,10 @@ async def rag_setup(settings):
         ),
     ]
 
+    # Delete any stale collection (e.g. wrong dimensions from previous run)
+    with contextlib.suppress(Exception):
+        await store.delete_collection()
+
     await pipeline.ingest(docs)
     yield retriever, store
 

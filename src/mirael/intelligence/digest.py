@@ -74,7 +74,7 @@ class PortfolioDigest:
             positions = []
 
         # Compute stats
-        total_pnl = sum(float(p.get("unrealized_pnl", 0)) for p in positions)
+        total_pnl = sum((float(p.get("unrealized_pnl", 0)) for p in positions), 0.0)
         health = float(balance.get("health_factor", 999))
         min_health = health
 

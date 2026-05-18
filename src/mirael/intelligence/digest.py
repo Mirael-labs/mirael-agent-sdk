@@ -168,7 +168,7 @@ class PortfolioDigest:
                 [ChatMessage(role="user", content=prompt)],
                 max_tokens=150,
             )
-            return response.text
+            return str(response.text)
         except Exception as exc:
             _log.warning("digest_commentary_failed", error=str(exc))
             return "Commentary unavailable."

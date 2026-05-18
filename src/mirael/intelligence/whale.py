@@ -195,12 +195,14 @@ class WhaleTracker:
             f"about market sentiment, and what it means for smaller traders. "
             f"Be factual, not financial advice. Use specific numbers if available."
         )
+        if self._llm is None:
+            return ""
         try:
             response = await self._llm.chat(
                 [ChatMessage(role="user", content=prompt)],
                 max_tokens=150,
             )
-            return response.text
+            return str(response.text)
         except Exception as exc:
             _log.warning("whale_ai_summary_failed", error=str(exc))
             return ""
